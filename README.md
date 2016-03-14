@@ -55,6 +55,23 @@ Setup the view (erb example):
    </body>
 ```
 
+## Supported components
+
+* ComboBox - `<vaadin-combo-box>`, `@elements.myComboBox = Vaadin::Elements.combo_box`
+* Grid - `<vaadin-grid>`, `@elements.myGrid = Vaadin::Elements.grid`
+* (partially) DatePicker - `<vaadin-date-picker>`, `@elements.myDatePicker = Vaadin::Elements.date_picker`
+
+The properties of all components can also be created with `Vaadin::Elements.new`. The only difference is that the helper methods limit the properties that can be set to only those that the corresponding element has.
+
+## Limitations
+
+There is plenty of limitations at the moment and pretty much everything can change. For those not listed, file an issue.
+
+Major limitations:
+* An object passed to the grid or combo box must have a valid `to_json` implementation.
+* Events broadcast by the components - other than `value-change` - cannot be listened to.
+* DatePicker currently operates on Strings rather than dates.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
