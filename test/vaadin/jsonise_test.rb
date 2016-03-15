@@ -7,6 +7,20 @@ class Vaadin::JsoniseTest < Minitest::Test
     attr_accessor :text, :number
   end
 
+  class VirtualModel
+    include Jsonise
+    attr_accessor :text, :number
+    json_virtual_attributes :sentence
+
+    def sentence
+      "#{text} with a number #{number}"
+    end
+
+    def sentence=
+      raise "This is never called!"
+    end
+  end
+
   # Called before every test method runs. Can be used
   # to set up fixture information.
   def setup
@@ -34,6 +48,18 @@ class Vaadin::JsoniseTest < Minitest::Test
 
   def test_array_to_json
     assert_equal "[{\"number\":42,\"text\":\"Something\"}]", [@model].to_json
+  end
+
+  def test_virtual_to_from_json
+    model = VirtualModel.new
+    model.text = "The ultimate solution to any problem."
+    model.number = 42
+    json = model.to_json
+    assert_equal "{\"number\":42,\"sentence\":\"The ultimate solution to any problem. with a number 42\",\"text\":\"The ultimate solution to any problem.\"}", json
+
+    restored = Model.new.from_json(json)
+    assert_equal model.text, restored.text
+    assert_equal model.number, restored.number
   end
 
 end

@@ -100,4 +100,20 @@ class Vaadin::ExtensionsTest < Minitest::Test
     assert_equal("bar", @map.bar)
     assert_equal([["foo", "foo"], ["bar", "bar"]], @map.to_a)
   end
+
+  def test_clearing_changes
+    @map.foo = "bar"
+    @map.bar = "foo"
+    changed = @map.clear_changes { @map.changed_attributes }
+    assert_equal(%w{foo bar}, changed)
+    assert_empty @map.changed_attributes
+  end
+
+  def test_clear_changes_on_clear
+    @map.foo = "bar"
+    @map.bar = "foo"
+    assert_equal %w{foo bar}, @map.changed_attributes
+    @map.clear
+    assert_empty @map.changed_attributes
+  end
 end

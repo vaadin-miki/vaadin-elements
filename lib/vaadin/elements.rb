@@ -1,18 +1,28 @@
 # Vaadin Elements Ruby Utilities
 # written by Miki
-# (c) 2016 Vaadin - http://www.vaadin.com - http://github.com/vaadin-miki
-# Licensed under Apache 2.0 License
+# (c) 2016 Vaadin - http://www.vaadin.com - http://github.com/vaadin-miki/vaadin-elements
 
 require "vaadin/elements/version"
 require 'vaadin/jsonise'
 require 'vaadin/core-extensions'
 
+##
+# Top level module for all Vaadin-related and -branded code.
+#
 module Vaadin
-  # view helpers to generate JS in a view of a sinatra app
+  ##
+  # This module contains view helpers that generate JavaScript code.
+  # Its intended use is with Sinatra.
+  #
   module ViewHelpers
     require_relative 'jsonise'
 
-    # sets up vaadin elements, i.e. binds events and sets their initial values
+    ##
+    # Sets up Vaadin Elements, i.e. binds events and sets their initial values.
+    # Accepts an array of ids of elements to be bound. If that array is not present or empty, all elements in +@elements+ are used.
+    #
+    # @param elements [Array<String>] with ids of elements to be bound.
+    # @return [String] with JS code.
     def setup_vaadin_elements(*elements)
       elements = @elements.keys if elements.empty?
       "function serverCallbackResponse(e) {\n
@@ -35,7 +45,11 @@ module Vaadin
           "});"
     end
 
-    # generates imports for specified elements
+    ##
+    # Generates imports for specified element types. If the specified types are not provided, all supported types will be imported (as defined in Vaadin::Elements::AVAILABLE.)
+    #
+    # @oaram elements [Array<String>] with element types to import.
+    # @return [String] with JS code.
     def import_vaadin_elements(*elements)
       elements = Vaadin::Elements::AVAILABLE if elements.empty?
       path_elements = elements + ["components"]
@@ -49,19 +63,31 @@ module Vaadin
   end
 
 
-  # basic elements class
+  ##
+  # Basic elements class. This should be an instance variable accessible easily by the controller and the view. By convention, its name should be +@elements+.
+  #
   class Elements < Hash
+    ##
+    # Currently supported Vaadin Elements.
+    #
     AVAILABLE = %w{vaadin-grid vaadin-combo-box vaadin-date-picker}
 
     include HashKeysAsMethods
     include RememberHashChanges
 
+    ##
+    # Synchronises the state of the Elements stored in this object with whatever is in the parameters.
+    #
+    # @param params [Hash] with parameter from a request.
     def sync(params)
       ignore_changes do
         params.keys.select { |k| k != "id" }.each { |key| self[params["id"]][key] = params[key] } if params["id"]
       end
     end
 
+    #
+    # these are predefined methods with allowed keys limited to public API of each corresponding element
+    #
     {"combo_box" => %w{allowCustomValue disabled itemLabelPath items itemValuePath label opened readonly selectedItem value},
      "grid" => %w{cellClassGenerator columns disabled footer frozenColumns header items rowClassGenerator rowDetailsGenerator selection size sortOrder visibleRows},
      "date_picker" => %w{i18n initialPosition label value}

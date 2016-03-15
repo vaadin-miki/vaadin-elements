@@ -1,6 +1,23 @@
 require 'json'
 
-# json helper
+##
+# JSON helper to include virtual attributes from an object. The result JSON is always a map.
+#
+# Virtual attributes can be specified using +json_virtual_attributes+ in a following manner:
+#
+#    class MyClass
+#      attr_accessor :att1, :att2
+#      json_virtual_attribute :virtual1, :virtual2
+#      ...
+#      def virtual1
+#        ...value of virtual1...
+#      end
+#
+#      def virtual2
+#        ...value of virtual2...
+#      end
+#
+# When calling +fron_json+ on an object that includes this module, virtual attributes are ignored.
 module Jsonise
   module ClassMethods
     def json_virtual_attributes(*atts)
@@ -19,7 +36,7 @@ module Jsonise
   end
 
   def from_json source
-    JSON.load(source).each { |var, val| self.instance_variable_set("@#{var}", val) }
+    JSON.load(source).each { |var, val| self.instance_variable_set("@#{var}", val) unless self.class.json_virtual_attributes.include?(var) }
     self
   end
 end
