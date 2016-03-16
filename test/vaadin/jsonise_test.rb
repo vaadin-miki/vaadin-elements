@@ -1,4 +1,4 @@
-require 'test_helper'
+require('test_helper') || require_relative('../test_helper')
 
 class Vaadin::JsoniseTest < Minitest::Test
 

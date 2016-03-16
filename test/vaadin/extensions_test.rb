@@ -1,4 +1,4 @@
-require 'test_helper'
+require('test_helper') || require_relative('../test_helper')
 
 class Vaadin::ExtensionsTest < Minitest::Test
 
@@ -116,4 +116,22 @@ class Vaadin::ExtensionsTest < Minitest::Test
     @map.clear
     assert_empty @map.changed_attributes
   end
+
+  def test_nested_limited
+    @map.allowed_keys = ["foo", "bar" => ["inside", "nested"]]
+    @map.foo = "this is us testing nested limited"
+    @map.bar.inside = "allowed"
+    @map.bar.nested = "also allowed"
+    @map.bar.forbidden = "no effect!"
+
+    assert_equal %w{foo bar}, @map.keys
+    assert_equal %w{inside nested}, @map.bar.keys
+  end
+
+  def test_with_this
+    result = with_this(@map) { |x| @map.foo.bar = "hello hello" }
+    assert_equal(["foo"], result.keys)
+    assert_equal({"foo" => {"bar" => "hello hello"}}, result)
+  end
+
 end

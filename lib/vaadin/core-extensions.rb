@@ -51,7 +51,7 @@ end
 # This module restricts the keys that can be used in +[]+ and +[]=+. Additionally, when +allowed_keys+ is not specified (i.e. is +nil+), then there is no limitation on allowed keys.
 #
 module HashWithLimitedKeys
-  attr_accessor :allowed_keys
+  attr_reader :allowed_keys
 
   ##
   # Clears all attributes that have an invalid key.
@@ -60,13 +60,17 @@ module HashWithLimitedKeys
     self.delete_if { |key, value| !allowed_keys.include?(key) } if allowed_keys
   end
 
-  def []=(name, value)
-    super if allowed_keys.nil? || allowed_keys.include?(name)
+  def allowed_keys=(allowed)
+    @allowed_keys = Hash.new
+    allowed.each { |key| key.is_a?(Hash) ? @allowed_keys.merge!(key) : @allowed_keys[key] = nil }
   end
 
-  def [](name)
-    super if allowed_keys.nil? || allowed_keys.include?(name)
+  # both []= and [] have a side effect of limiting the value if it happens to limit keys as well
+  ["[]=(name, value)", "[](name)"].each { |sig| class_eval(<<METH) }
+  def #{sig}
+    with_this(super) {|result| result.allowed_keys = allowed_keys[name] if result && result.is_a?(HashWithLimitedKeys) && allowed_keys && allowed_keys[name]} if allowed_keys.nil? || allowed_keys.include?(name)
   end
+METH
 end
 
 ##
@@ -157,6 +161,14 @@ module RememberHashChanges
     return self.class.new unless has_changes?
     result = @changes ? clear_changes { self.class[@changes.collect { |k| [k, (value = self[k]).is_a?(RememberHashChanges) ? value.changes_map : value] }] } : self.class.new
     self.each { |key, value| result[key] = value.changes_map if value.is_a?(RememberHashChanges) && value.has_changes? }
+    result
+  end
+end
+
+class Object
+  def with_this param, &block
+    result = param
+    block.call(param, binding)
     result
   end
 end
