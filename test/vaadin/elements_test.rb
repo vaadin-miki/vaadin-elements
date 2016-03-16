@@ -1,7 +1,7 @@
 require('test_helper') || require_relative('../test_helper')
 
 class Vaadin::ElementsTest < Minitest::Test
-  def test_that_it_has_a_version_number
+  def test_has_version_number
     refute_nil ::Vaadin::VERSION
   end
 
@@ -45,5 +45,20 @@ class Vaadin::ElementsTest < Minitest::Test
     combo.readonly = true
     json = combo.to_json
     assert_equal("{\"readonly\":true}", json)
+    assert_equal("combo_box", combo.vaadin_element)
+  end
+
+  def test_date_picker_api
+    picker = Vaadin::Elements.date_picker
+    puts "#{picker.allowed_keys.inspect}"
+    picker.i18n.month_names = "this does not work!"
+    picker.i18n.monthNames = %w{styczeń luty marzec kwiecień maj czerwiec lipiec sierpień wrzesień październik listopad grudzień}
+    assert_nil picker.i18n.month_names
+    assert_equal %w{styczeń luty marzec kwiecień maj czerwiec lipiec sierpień wrzesień październik listopad grudzień}, picker.i18n.monthNames
+    picker.label = "this will work"
+    picker.property ="this will not"
+    assert_nil picker.property
+    assert_equal "this will work", picker.label
+    assert_equal "date_picker", picker.vaadin_element
   end
 end

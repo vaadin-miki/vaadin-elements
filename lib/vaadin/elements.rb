@@ -74,6 +74,9 @@ module Vaadin
 
     include HashKeysAsMethods
     include RememberHashChanges
+    include HashWithLimitedKeys
+
+    attr_accessor :vaadin_element
 
     ##
     # Synchronises the state of the Elements stored in this object with whatever is in the parameters.
@@ -90,10 +93,11 @@ module Vaadin
     #
     {"combo_box" => %w{allowCustomValue disabled itemLabelPath items itemValuePath label opened readonly selectedItem value},
      "grid" => %w{cellClassGenerator columns disabled footer frozenColumns header items rowClassGenerator rowDetailsGenerator selection size sortOrder visibleRows},
-     "date_picker" => %w{i18n initialPosition label value}
+     "date_picker" => ['initialPosition', 'label', 'value', 'i18n' => %w{monthNames weekdaysShort firstDayOfWeek today cancel formatDate}]
     }.each do |key, value|
       define_singleton_method key do
-        result = Elements.new.extend(HashWithLimitedKeys)
+        result = Elements.new
+        result.vaadin_element = key
         result.allowed_keys = value
         result
       end

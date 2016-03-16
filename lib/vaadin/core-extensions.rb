@@ -68,7 +68,7 @@ module HashWithLimitedKeys
   # both []= and [] have a side effect of limiting the value if it happens to limit keys as well
   ["[]=(name, value)", "[](name)"].each { |sig| class_eval(<<METH) }
   def #{sig}
-    with_this(super) {|result| result.allowed_keys = allowed_keys[name] if result && result.is_a?(HashWithLimitedKeys) && allowed_keys && allowed_keys[name]} if allowed_keys.nil? || allowed_keys.include?(name)
+    with_this(super) {|result| result.allowed_keys = allowed_keys[name] if result && result.is_a?(HashWithLimitedKeys) && allowed_keys && allowed_keys[name]}  if allowed_keys.nil? || allowed_keys.include?(name)
   end
 METH
 end
@@ -82,15 +82,11 @@ module RememberHashChanges
   require 'set'
 
   def [](name)
-    value = super
-    value.ignore_changes = @ignore_changes if value.is_a?(RememberHashChanges)
-    value
+    with_this(super) { |value| value.ignore_changes = @ignore_changes if value.is_a?(RememberHashChanges) }
   end
 
   def []=(name, value)
-    result = super
-    ((@changes ||= Set.new) << name) unless ignore_changes
-    result
+    with_this(super) { |value| ((@changes ||= Set.new) << name) unless ignore_changes }
   end
 
   ##
@@ -111,9 +107,7 @@ module RememberHashChanges
     if block_given? then
       old_ignore = @ignore_changes
       self.ignore_changes = true
-      result = yield
-      self.ignore_changes = old_ignore
-      result
+      with_this(yield) { |result| self.ignore_changes = old_ignore }
     else
       @ignore_changes
     end
@@ -159,13 +153,16 @@ module RememberHashChanges
   #
   def changes_map
     return self.class.new unless has_changes?
-    result = @changes ? clear_changes { self.class[@changes.collect { |k| [k, (value = self[k]).is_a?(RememberHashChanges) ? value.changes_map : value] }] } : self.class.new
-    self.each { |key, value| result[key] = value.changes_map if value.is_a?(RememberHashChanges) && value.has_changes? }
-    result
+    with_this(@changes ? clear_changes { self.class[@changes.collect { |k| [k, (value = self[k]).is_a?(RememberHashChanges) ? value.changes_map : value] }] } : self.class.new) do |result|
+      self.each { |key, value| result[key] = value.changes_map if value.is_a?(RememberHashChanges) && value.has_changes? }
+    end
   end
 end
 
 class Object
+  ##
+  # Calls a given block passing given parameter to it and returns that parameter as a result.
+  #
   def with_this param, &block
     result = param
     block.call(param, binding)
