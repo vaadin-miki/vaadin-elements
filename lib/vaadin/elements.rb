@@ -38,9 +38,11 @@ module Vaadin
           elements.collect do |element|
             "var #{element} = document.querySelector(\"##{element}\");\n" +
                 @elements[element].collect { |key, value| "if('#{key}' in #{element}) {\n#{element}.#{key} = #{value.to_json}\n};" }.join("\n") + "\n" +
-                "#{element}.addEventListener(\"value-changed\", function(e) {ajax.post(\"" +
-                (@elements[element].has_key?("onValueChanged") ? @elements[element]["onValueChanged"] : "~/"+element) +
+                @elements[element].vaadin_events.collect do |event, post|
+                  "#{element}.addEventListener(\"#{event}\", function(e) {ajax.post(\"" +
+                      (post || "~/:id").gsub(":id", element).gsub(":event", event) +
                 "\", {id: '#{element}', value: e.detail.value}, serverCallbackResponse)});\n"
+                end.join("\n")
           end.join("\n") +
           "});"
     end
@@ -62,7 +64,6 @@ module Vaadin
     end
   end
 
-
   ##
   # Basic elements class. This should be an instance variable accessible easily by the controller and the view. By convention, its name should be +@elements+.
   #
@@ -76,7 +77,11 @@ module Vaadin
     include RememberHashChanges
     include HashWithLimitedKeys
 
-    attr_accessor :vaadin_element
+    attr_accessor :vaadin_element, :vaadin_events
+
+    def initialize
+      @vaadin_events = Hash.new
+    end
 
     ##
     # Synchronises the state of the Elements stored in this object with whatever is in the parameters.
@@ -91,14 +96,23 @@ module Vaadin
     #
     # these are predefined methods with allowed keys limited to public API of each corresponding element
     #
-    {"combo_box" => %w{allowCustomValue disabled itemLabelPath items itemValuePath label opened readonly selectedItem value},
-     "grid" => %w{cellClassGenerator columns disabled footer frozenColumns header items rowClassGenerator rowDetailsGenerator selection size sortOrder visibleRows},
-     "date_picker" => ['initialPosition', 'label', 'value', 'i18n' => %w{monthNames weekdaysShort firstDayOfWeek today cancel formatDate}]
+    {"combo_box" =>
+         {properties: %w{allowCustomValue disabled itemLabelPath items itemValuePath label opened readonly selectedItem value},
+          events: %w{value-changed}},
+     "grid" =>
+         {properties: %w{cellClassGenerator columns disabled footer frozenColumns header items rowClassGenerator rowDetailsGenerator selection size sortOrder visibleRows},
+          events: %w{value-changed}
+         },
+     "date_picker" =>
+         {properties: ['initialPosition', 'label', 'value', 'i18n' => %w{monthNames weekdaysShort firstDayOfWeek today cancel formatDate}],
+          events: %w{value-changed}
+         }
     }.each do |key, value|
       define_singleton_method key do
         result = Elements.new
         result.vaadin_element = key
-        result.allowed_keys = value
+        result.allowed_keys = value[:properties]
+        value[:events].each { |event| result.vaadin_events << event }
         result
       end
     end

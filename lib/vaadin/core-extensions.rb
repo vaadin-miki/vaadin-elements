@@ -169,3 +169,12 @@ class Object
     result
   end
 end
+
+class Hash
+  ##
+  # Appends given key with current default value
+  #
+  def << key
+    self[key] = self[key]
+  end
+end

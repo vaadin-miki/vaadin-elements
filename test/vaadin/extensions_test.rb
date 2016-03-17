@@ -134,4 +134,12 @@ class Vaadin::ExtensionsTest < Minitest::Test
     assert_equal({"foo" => {"bar" => "hello hello"}}, result)
   end
 
+  def test_hash_append
+    map = Hash.new("default")
+    map << "key"
+    assert map.include?("key")
+    assert map.is_a?(Hash)
+    assert_equal("default", map["key"])
+  end
+
 end
