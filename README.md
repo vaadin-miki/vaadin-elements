@@ -34,7 +34,11 @@ Set up elements:
 
 `@elements = Vaadin::Elements.new`
 
-Set up properties in the code:
+Set up an element:
+
+`@elements.myComboBox = Vaadin::Elements.combo_box
+
+Or set up properties in the code:
 
 `@elements.myComboBox.items = %w{hello elements from Ruby application}`
 
@@ -59,18 +63,26 @@ Setup the view (erb example):
 
 * ComboBox - `<vaadin-combo-box>`, `@elements.myComboBox = Vaadin::Elements.combo_box`
 * Grid - `<vaadin-grid>`, `@elements.myGrid = Vaadin::Elements.grid`
-* (partially) DatePicker - `<vaadin-date-picker>`, `@elements.myDatePicker = Vaadin::Elements.date_picker`
+* DatePicker - `<vaadin-date-picker>`, `@elements.myDatePicker = Vaadin::Elements.date_picker`
 
-The properties of all components can also be created with `Vaadin::Elements.new`. The only difference is that the helper methods limit the properties that can be set to only those that the corresponding element has.
+The properties of all components can also be created with `Vaadin::Elements.new`. The advantages of using dedicated helpers are:
+* the properties that can be set are limited to only those that the corresponding element has
+* the `value-changed` event is listened to by default
+
+All events broadcast by these elements can be listened to. By default only `value-changed` is and only when using dedicated helper, and it posts to `/~/:id`. Events can be listened to by using one of the two:
+
+* `element.vaadin_events << 'event-name` for a default path `/~/:id`
+* `element.vaadin_events['event-name'] = '/path/with/:id/or/:event` for a custom path
+
+In either case a POST request is made. `:id` and `:event` are replaced with the element's id and the event name, respectively.
 
 ## Limitations
 
-There is plenty of limitations at the moment and pretty much everything can change. For those not listed, file an issue.
+There is plenty of limitations at the moment and pretty much anything can change. For issues not listed here, file an issue.
 
 Major limitations:
 * An object passed to the grid or combo box must have a valid `to_json` implementation.
-* Events broadcast by the components - other than `value-change` - cannot be listened to.
-* DatePicker currently operates on Strings rather than dates.
+* The controller code is polluted with elements code. Issue #3, when implemented, will move all code related to elements to the view.
 
 ## Development
 
