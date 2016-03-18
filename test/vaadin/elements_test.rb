@@ -67,7 +67,6 @@ class Vaadin::ElementsTest < Minitest::Test
 
   def test_date_picker_api
     picker = Vaadin::Elements.date_picker
-    puts "#{picker.allowed_keys.inspect}"
     picker.i18n.month_names = "this does not work!"
     picker.i18n.monthNames = %w{styczeń luty marzec kwiecień maj czerwiec lipiec sierpień wrzesień październik listopad grudzień}
     assert_nil picker.i18n.month_names
@@ -77,5 +76,11 @@ class Vaadin::ElementsTest < Minitest::Test
     assert_nil picker.property
     assert_equal "this will work", picker.label
     assert_equal "date_picker", picker.vaadin_element
+  end
+
+  def test_date_picker_date
+    picker = Vaadin::Elements.date_picker
+    picker.value = '2008-08-30'
+    assert_equal Date.parse('2008-08-30'), picker.value
   end
 end

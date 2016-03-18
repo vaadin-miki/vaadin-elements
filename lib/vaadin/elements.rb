@@ -2,9 +2,10 @@
 # written by Miki
 # (c) 2016 Vaadin - http://www.vaadin.com - http://github.com/vaadin-miki/vaadin-elements
 
-require "vaadin/elements/version"
+require 'vaadin/elements/version'
 require 'vaadin/jsonise'
 require 'vaadin/core-extensions'
+require 'date'
 
 ##
 # Top level module for all Vaadin-related and -branded code.
@@ -40,11 +41,11 @@ module Vaadin
                 @elements[element].collect { |key, value| "if('#{key}' in #{element}) {\n#{element}.#{key} = #{value.to_json}\n};" }.join("\n") + "\n" +
                 @elements[element].vaadin_events.collect do |event, post|
                   "#{element}.addEventListener(\"#{event}\", function(e) {ajax.post(\"" +
-                      (post || "~/:id").gsub(":id", element).gsub(":event", event) +
+                      (post || '~/:id').gsub(':id', element).gsub(':event', event) +
                 "\", {id: '#{element}', value: e.detail.value}, serverCallbackResponse)});\n"
                 end.join("\n")
           end.join("\n") +
-          "});"
+          '});'
     end
 
     ##
@@ -54,8 +55,8 @@ module Vaadin
     # @return [String] with JS code.
     def import_vaadin_elements(*elements)
       elements = Vaadin::Elements::AVAILABLE if elements.empty?
-      path_elements = elements + ["components"]
-      path_base = "http://polygit2.appspot.com/polymer+v1.3.1/" + path_elements.join("+vaadin+*/")+"/"
+      path_elements = elements + ['components']
+      path_base = 'http://polygit2.appspot.com/polymer+v1.3.1/' + path_elements.join('+vaadin+*/')+'/'
 
       # TODO moment should be imported only if vaadin-date-picker is selected!
       (["<script src=\"#{path_base}webcomponentsjs/webcomponents-lite.min.js\"></script>",
@@ -76,6 +77,7 @@ module Vaadin
     include HashKeysAsMethods
     include RememberHashChanges
     include HashWithLimitedKeys
+    include HashValueModification
 
     attr_accessor :vaadin_element, :vaadin_events
 
@@ -89,30 +91,33 @@ module Vaadin
     # @param params [Hash] with parameter from a request.
     def sync(params)
       ignore_changes do
-        params.keys.select { |k| k != "id" }.each { |key| self[params["id"]][key] = params[key] } if params["id"]
+        params.keys.select { |k| k != 'id' }.each { |key| self[params['id']][key] = params[key] } if params['id']
       end
     end
 
     #
     # these are predefined methods with allowed keys limited to public API of each corresponding element
     #
-    {"combo_box" =>
+    {'combo_box' =>
          {properties: %w{allowCustomValue disabled itemLabelPath items itemValuePath label opened readonly selectedItem value},
-          events: %w{value-changed}},
-     "grid" =>
+          events: %w{value-changed}
+         },
+     'grid' =>
          {properties: %w{cellClassGenerator columns disabled footer frozenColumns header items rowClassGenerator rowDetailsGenerator selection size sortOrder visibleRows},
           events: %w{value-changed}
          },
-     "date_picker" =>
+     'date_picker' =>
          {properties: ['initialPosition', 'label', 'value', 'i18n' => %w{monthNames weekdaysShort firstDayOfWeek today cancel formatDate}],
-          events: %w{value-changed}
+          events: %w{value-changed},
+          modifiers: {'value' => [Date.method(:parse)]}
          }
     }.each do |key, value|
       define_singleton_method key do
         result = Elements.new
         result.vaadin_element = key
         result.allowed_keys = value[:properties]
-        value[:events].each { |event| result.vaadin_events << event }
+        value[:events].each { |event| result.vaadin_events << event } if value[:events]
+        value[:modifiers].each { |attribute, modifiers| result.class.modify_attribute(attribute, *modifiers) } if value[:modifiers]
         result
       end
     end

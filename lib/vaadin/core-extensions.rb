@@ -159,6 +159,36 @@ module RememberHashChanges
   end
 end
 
+module HashValueModification
+
+  module ClassMethods
+    attr_writer :converters
+
+    def converters
+      @converters ||= {}
+    end
+
+    def modify_attribute(attribute, setter = nil, getter = nil, &block)
+      setter, getter = *block if block && setter.nil? && getter.nil?
+      getter = block if block && setter && getter.nil?
+      converters[attribute] = [setter, getter]
+    end
+  end
+
+  def self.included(into)
+    into.extend ClassMethods
+  end
+
+  def []= name, value
+    super(name, (self.class.converters.include?(name) && self.class.converters[name].first ? self.class.converters[name].first.call(value) : value))
+  end
+
+  def [] name
+    with_this(super) { |result| self.class.converters.include?(name) && self.class.converters[name].last ? self.class.converters[name].last.call(result) : result }
+  end
+
+end
+
 class Object
   ##
   # Calls a given block passing given parameter to it and returns that parameter as a result.

@@ -1,4 +1,5 @@
 require('test_helper') || require_relative('../test_helper')
+require 'date'
 
 class Vaadin::ExtensionsTest < Minitest::Test
 
@@ -6,6 +7,14 @@ class Vaadin::ExtensionsTest < Minitest::Test
     include HashKeysAsMethods
     include RememberHashChanges
     include HashWithLimitedKeys
+    include HashValueModification
+
+    modify_attribute "date", Date.method(:parse)
+  end
+
+  class SecondMock < Hash
+    include HashKeysAsMethods
+    include HashValueModification
   end
 
 # Called before every test method runs. Can be used
@@ -137,9 +146,21 @@ class Vaadin::ExtensionsTest < Minitest::Test
   def test_hash_append
     map = Hash.new("default")
     map << "key"
-    assert map.include?("key")
+    assert map.include?('key')
     assert map.is_a?(Hash)
     assert_equal("default", map["key"])
+  end
+
+  def test_hash_convert_on_set
+    @map.date = '2012-02-17'
+    assert_equal Date.parse('2012-02-17'), @map.date
+
+    @map.foo = '2014-04-21'
+    assert_equal '2014-04-21', @map.foo
+
+    other = SecondMock.new
+    other.date = '2014-04-21'
+    assert_equal '2014-04-21', other.date
   end
 
 end
