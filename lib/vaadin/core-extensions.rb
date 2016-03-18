@@ -159,6 +159,21 @@ module RememberHashChanges
   end
 end
 
+##
+# Adds a class helper for converting the value of specified attribute with provided `call`ables.
+#
+# Example:
+#
+#     class SetDatesAsStrings < Hash
+#       include HashValueModification
+#       modify_attribute 'date', Date.method(:parse)
+#     end
+#
+#     foo = SetDatesAsStrings.new
+#     foo['date'] = '2008-08-30'
+#     foo['date'].is_a?(Date)
+#     >> true
+#
 module HashValueModification
 
   module ClassMethods
@@ -168,6 +183,15 @@ module HashValueModification
       @converters ||= {}
     end
 
+    ##
+    # Specifies setter and getter callbacks for a given attribute.
+    #
+    # `modify_attribute(attribute) {...}` - setter and getter are returned from block
+    # `modify_attribute(attribute, setter) {...}` - getter is returned from block
+    # `modify_attribute(attribute, setter, getter)` - both callbacks are explicit
+    #
+    # The setter and getter callbacks will be called through `call(value)`, where value is either the value being set to the attribute or the value read from the attribute.
+    #
     def modify_attribute(attribute, setter = nil, getter = nil, &block)
       setter, getter = *block if block && setter.nil? && getter.nil?
       getter = block if block && setter && getter.nil?
