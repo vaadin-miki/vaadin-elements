@@ -59,4 +59,9 @@ class Vaadin::ElementsTest < Minitest::Test
     assert_equal "<vaadin-combo-box id=\"person_country\" name=\"person[country]\"></vaadin-combo-box><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {\n  var cb = document.querySelector(\"#person_country\");\n  cb.items = [\"Poland\",\"Finland\",\"Germany\"];\n});\n</script>", html
   end
 
+  def test_combo_box_choices_no_method
+    html = vaadin_combo_box(:country, %w{Poland Finland Germany})
+    assert_equal "<vaadin-combo-box id=\"country\" name=\"country\"></vaadin-combo-box><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {\n  var cb = document.querySelector(\"#country\");\n  cb.items = [\"Poland\",\"Finland\",\"Germany\"];\n});\n</script>", html
+  end
+
 end
