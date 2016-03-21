@@ -44,9 +44,19 @@ class Vaadin::ElementsTest < Minitest::Test
     assert_equal "function serverCallbackResponse(e) {\n\n         console.log(e);\n\n         var resp = JSON.parse(e);\n\n         for(var oid in resp) {\n\n           var comp = document.querySelector('#'+oid);\n\n           for(var meth in resp[oid]) {\n\n             if(meth in comp) {\n\n             comp[meth] = resp[oid][meth];\n\n       }}}};\ndocument.addEventListener(\"WebComponentsReady\", function (e) {\nvar combo = document.querySelector(\"#combo\");\n\ncombo.addEventListener(\"value-changed\", function(e) {ajax.post(\"~/combo\", {id: 'combo', value: e.detail.value}, serverCallbackResponse)});\n\ncombo.addEventListener(\"custom-value-set\", function(e) {ajax.post(\"/combo/has/custom-value-set\", {id: 'combo', value: e.detail.value}, serverCallbackResponse)});\n});", js
   end
 
-  def test_combo_box
+  def test_combo_box_empty
     html = vaadin_combo_box
     assert_equal "<vaadin-combo-box></vaadin-combo-box>", html
+  end
+
+  def test_combo_box_id_only
+    html = vaadin_combo_box({id: "box"})
+    assert_equal "<vaadin-combo-box id=\"box\"></vaadin-combo-box>", html
+  end
+
+  def test_combo_box_choices
+    html = vaadin_combo_box(:person, :country, %w{Poland Finland Germany})
+    assert_equal "<vaadin-combo-box id=\"person_country\" name=\"person[country]\"></vaadin-combo-box><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {\n  var cb = document.querySelector(\"#person_country\");\n  cb.items = [\"Poland\",\"Finland\",\"Germany\"];\n});\n</script>", html
   end
 
 end

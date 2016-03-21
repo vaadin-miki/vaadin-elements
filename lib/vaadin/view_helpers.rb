@@ -57,12 +57,31 @@ module Vaadin
 
     ##
     # Renders HTML of a vaadin combo box.
-    def vaadin_combo_box(parameters = {})
-      result = "<vaadin-combo-box>"
+    # Uses JS to load the real data.
+    def vaadin_combo_box(object = nil, method = nil, choices = nil, options = {}, html_options = {}, &block)
+      html_options, object = object, nil if method.nil? && choices.nil? && options.empty? && object.is_a?(Hash) && html_options.empty?
+
+      html_options = (object.nil? || method.nil? ? {} : {id: [object, method].join("_"), name: "#{object}[#{method}]", }).merge(html_options)
+      attributes = html_options.collect { |att, val| "#{att}=\"#{val}\"" }.join(" ")
+
+      result = "<vaadin-combo-box"
+      result += " "+attributes unless attributes.empty?
+      result += ">"
       result += yield if block_given?
       result += "</vaadin-combo-box>"
-    end
 
+      if choices && !choices.empty? then
+        result += "<script async=\"false\" defer=\"true\">"
+        result += <<JS
+document.addEventListener("WebComponentsReady", function(e) {
+  var cb = document.querySelector("##{html_options[:id]}");
+  cb.items = #{choices.to_json};
+});
+JS
+        result += "</script>"
+      end
+      result
+    end
   end
 
 end
