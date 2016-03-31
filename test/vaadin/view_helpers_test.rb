@@ -64,4 +64,8 @@ class Vaadin::ElementsTest < Minitest::Test
     assert_equal "<vaadin-combo-box id=\"country\" name=\"country\"></vaadin-combo-box><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {\n  var cb = document.querySelector(\"#country\");\n  cb.items = [\"Poland\",\"Finland\",\"Germany\"];\n});\n</script>", html
   end
 
+  def test_combo_box_custom_label
+    
+  end
+
 end
