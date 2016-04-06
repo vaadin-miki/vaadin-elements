@@ -63,9 +63,33 @@ module Vaadin
 
       # method may be skipped
       method, choices = nil, method if choices.nil? && method
+      object, choices = nil, object if choices.nil? && method.nil? && object
 
       html_options = (object.nil? ? {} : (method.nil? ? {id: object, name: object} : {id: [object, method].join("_"), name: "#{object}[#{method}]", })).merge(html_options)
-      attributes = html_options.collect { |att, val| "#{att}=\"#{val}\"" }.join(" ")
+
+      # id is required except when the helper is used with no parameters at all
+      raise "combo box must have an id (either implicit or explicit)" unless html_options[:id] || (object.nil? && method.nil? && choices.nil? && !html_options[:immediate])
+
+      # custom value
+      value_attr = html_options[:item_value_path]
+
+      # immediateness
+      # by default causes a rest-like post to /object/id/method if there is id, or /object/method if there is no id, or can be specified
+      immediate = html_options.delete :immediate
+
+      data = instance_variable_get("@#{object}") rescue nil
+      immediate = if data && data.respond_to?(:id) then
+                    "/#{object}/#{data.id}" + (method.nil? ? "" : "/#{method}")
+                  elsif method.nil? then
+                    "/#{object || html_options[:id]}"
+                  else
+                    "/#{object}/#{method}"
+                  end if immediate === true
+
+      # replace placeholders
+      immediate = immediate.gsub(':id', html_options[:id].to_s).gsub(':event', "value-changed") if immediate
+
+      attributes = html_options.collect { |att, val| "#{att.to_s.gsub("_", "-")}=\"#{val}\"" }.join(" ")
 
       result = "<vaadin-combo-box"
       result += " "+attributes unless attributes.empty?
@@ -73,15 +97,20 @@ module Vaadin
       result += yield if block_given?
       result += "</vaadin-combo-box>"
 
-      if choices && !choices.empty? then
+      data = data.send(method) if method && data.respond_to?(method)
+      data = data.send(value_attr) if value_attr
+
+      # build js
+      js = []
+      js << "cb.items = #{choices.to_json};" if choices && !choices.empty?
+      js << "cb.value = #{data.to_json};" if data
+      js << %{cb.addEventListener('value-changed', function(e) {ajax.post('#{immediate}', {id: '#{html_options[:id]}', value: e.detail.value}, serverCallbackResponse);});} if immediate
+
+      unless js.empty?
         result += "<script async=\"false\" defer=\"true\">"
-        result += <<JS
-document.addEventListener("WebComponentsReady", function(e) {
-  var cb = document.querySelector("##{html_options[:id]}");
-  cb.items = #{choices.to_json};
-});
-JS
-        result += "</script>"
+        result += "document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"##{html_options[:id]}\");"
+        result +=js.join("")
+        result += "});</script>"
       end
       result
     end
