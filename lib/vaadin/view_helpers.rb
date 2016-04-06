@@ -58,9 +58,10 @@ module Vaadin
     ##
     # Renders HTML of a vaadin combo box.
     # Uses JS to load the real data.
-    def vaadin_combo_box(object = nil, method = nil, choices = nil, options = {}, html_options = {}, &block)
-      html_options, object = object, nil if method.nil? && choices.nil? && options.empty? && object.is_a?(Hash) && html_options.empty?
+    def vaadin_combo_box(object = nil, method = nil, choices = nil, **html_options, &block)
+      # html_options, object = object, nil if method.nil? && choices.nil? && object.is_a?(Hash) && html_options.empty?
 
+      # method may be skipped
       method, choices = nil, method if choices.nil? && method
 
       html_options = (object.nil? ? {} : (method.nil? ? {id: object, name: object} : {id: [object, method].join("_"), name: "#{object}[#{method}]", })).merge(html_options)

@@ -8,6 +8,7 @@ class Vaadin::ElementsTest < Minitest::Test
   # to set up fixture information.
   def setup
     @elements = Vaadin::Elements.new
+    @countries = %w{Poland Finland Germany}
   end
 
   # Called after every test method runs. Can be used to tear
@@ -55,17 +56,18 @@ class Vaadin::ElementsTest < Minitest::Test
   end
 
   def test_combo_box_choices
-    html = vaadin_combo_box(:person, :country, %w{Poland Finland Germany})
+    html = vaadin_combo_box(:person, :country, @countries)
     assert_equal "<vaadin-combo-box id=\"person_country\" name=\"person[country]\"></vaadin-combo-box><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {\n  var cb = document.querySelector(\"#person_country\");\n  cb.items = [\"Poland\",\"Finland\",\"Germany\"];\n});\n</script>", html
   end
 
   def test_combo_box_choices_no_method
-    html = vaadin_combo_box(:country, %w{Poland Finland Germany})
+    html = vaadin_combo_box(:country, @countries)
     assert_equal "<vaadin-combo-box id=\"country\" name=\"country\"></vaadin-combo-box><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {\n  var cb = document.querySelector(\"#country\");\n  cb.items = [\"Poland\",\"Finland\",\"Germany\"];\n});\n</script>", html
   end
 
   def test_combo_box_custom_label
-    
+    html = vaadin_combo_box(:country, @countries, {label: "Pick a country:"})
+    assert_equal "<vaadin-combo-box id=\"country\" name=\"country\" label=\"Pick a country:\"></vaadin-combo-box><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {\n  var cb = document.querySelector(\"#country\");\n  cb.items = [\"Poland\",\"Finland\",\"Germany\"];\n});\n</script>", html
   end
 
 end
