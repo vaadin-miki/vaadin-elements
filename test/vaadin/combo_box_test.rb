@@ -116,4 +116,9 @@ class Vaadin::ComboBoxTest < Minitest::Test
     assert_equal %{<vaadin-combo-box id="city" name="city" item-label-path="name" item-value-path="code"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#city");cb.items = [{"code":"GDN","name":"Gdańsk"},{"code":"TKU","name":"Turku"},{"code":"MUC","name":"Muenchen"}];cb.value = "MUC";});</script>}, html
   end
 
+  def test_label_no_object
+    html = vaadin_combo_box(:miasto, @cities, item_label_path: "name", item_value_path: "code")
+    assert_equal %{<vaadin-combo-box id="miasto" name="miasto" item-label-path="name" item-value-path="code"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#miasto");cb.items = [{"code":"GDN","name":"Gdańsk"},{"code":"TKU","name":"Turku"},{"code":"MUC","name":"Muenchen"}];});</script>}, html
+  end
+
 end

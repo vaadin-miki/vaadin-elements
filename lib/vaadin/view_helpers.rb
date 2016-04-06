@@ -97,8 +97,10 @@ module Vaadin
       result += yield if block_given?
       result += "</vaadin-combo-box>"
 
-      data = data.send(method) if method && data.respond_to?(method)
-      data = data.send(value_attr) if value_attr
+      if data then
+        data = data.send(method) if method && data.respond_to?(method)
+        data = data.send(value_attr) if value_attr
+      end
 
       # build js
       js = []
