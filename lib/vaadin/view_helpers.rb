@@ -77,7 +77,10 @@ module Vaadin
 
 
       # replace placeholders
-      immediate = immediate.gsub(':id', html_options[:id].to_s).gsub(':event', "value-changed") if immediate
+      if immediate then
+        options[:immediate_event] ||= 'value-changed'
+        immediate = immediate.gsub(':id', html_options[:id].to_s).gsub(':event', options[:immediate_event])
+      end
 
       inline_value = options.delete(:value_as)
       # value may be inlined
@@ -95,7 +98,7 @@ module Vaadin
       js = []
       yield(js, data) if block_given?
       js << "cb.value = #{data.to_json};" if data && !inline_value && !options[:value_as_selection]
-      js << %{cb.addEventListener('value-changed', function(e) {ajax.post('#{immediate}', {id: '#{html_options[:id]}', value: e.detail.value}, serverCallbackResponse);});} if immediate
+      js << %{cb.addEventListener('#{options[:immediate_event]}', function(e) {ajax.post('#{immediate}', {id: '#{html_options[:id]}', value: e.detail.value}, serverCallbackResponse);});} if immediate
 
       unless js.empty?
         result += "<script async=\"false\" defer=\"true\">"
@@ -136,7 +139,7 @@ module Vaadin
     end
 
     def vaadin_grid(object = nil, method = nil, choices = nil, **html_options, &block)
-      vaadin_collection_element("grid", object, method, choices, html_options, block, value_as_selection: true)
+      vaadin_collection_element("grid", object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed')
     end
 
   end
