@@ -63,7 +63,12 @@ class Vaadin::GridTest < Minitest::Test
 
   def test_choices_immediate
     html = vaadin_grid @countries, id: "grid", immediate: true
-    assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];cb.addEventListener('selected-items-changed', function(e) {ajax.post('/grid', {id: 'grid', value: e.detail.value}, serverCallbackResponse);});});</script>", html
+    assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];cb.addEventListener('selected-items-changed', function(e) {ajax.post('/grid', {id: 'grid', value: e.detail.value}, null);});});</script>", html
+  end
+
+  def test_choices_immediate_callback
+    html = vaadin_grid @countries, id: "grid", immediate: true, use_callback: 'gridCallback'
+    assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];cb.addEventListener('selected-items-changed', function(e) {ajax.post('/grid', {id: 'grid', value: e.detail.value}, gridCallback);});});</script>", html
   end
 
 end

@@ -24,7 +24,7 @@ Or install it yourself as:
 
 Require elements:
 
-`require 'vaadin-elements'`
+`require 'vaadin/elements'`
 
 Include helpers (Sinatra):
 
@@ -51,6 +51,7 @@ Supported options:
 * `item_value_path` and `item_label_path` - specify attribute from the collection that will be used as value and caption of an item, respectively
 * `immediate` - either `true` or a path to post data to immediately on value change; default route is REST-like (object/id/method), with POSTed id of the component and value; response should be valid JSON for server callback
 * `id` - to overwrite the default id or provide a custom one (required when `immediate`)
+* `use_callback` - either `true` or a name of a JavaScript available function to call with the response; when `true`, default `serverCallbackResponse` is used and it expects `application/json` as response type
 
 Only `value-changed` event is supported this way.
 
@@ -63,6 +64,7 @@ Supported options:
 * `label` - caption of the component
 * `immediate` - either `true` or a path to post data to immediately on value change; default route is REST-like (object/id/method), with POSTed id of the component and value; response should be valid JSON for server callback
 * `id` - to overwrite the default id or provide a custom one (required when `immediate`)
+* `use_callback` - either `true` or a name of a JavaScript available function to call with the response; when `true`, default `serverCallbackResponse` is used and it expects `application/json` as response type
 
 Only `value-changed` event is supported this way.
 

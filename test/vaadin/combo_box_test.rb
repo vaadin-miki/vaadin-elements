@@ -88,27 +88,37 @@ class Vaadin::ComboBoxTest < Minitest::Test
 
   def test_immediate_id_only
     html = vaadin_combo_box(id: "box", immediate: true)
-    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/box', {id: 'box', value: e.detail.value}, serverCallbackResponse);});});</script>}, html
+    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/box', {id: 'box', value: e.detail.value}, null);});});</script>}, html
   end
 
   def test_immediate_object_options
     html = vaadin_combo_box(:country, @countries, {label: "Pick a country:", immediate: true})
-    assert_equal %{<vaadin-combo-box id="country" name="country" label="Pick a country:"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#country");cb.items = ["Poland","Finland","Germany"];cb.addEventListener('value-changed', function(e) {ajax.post('/country', {id: 'country', value: e.detail.value}, serverCallbackResponse);});});</script>}, html
+    assert_equal %{<vaadin-combo-box id="country" name="country" label="Pick a country:"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#country");cb.items = ["Poland","Finland","Germany"];cb.addEventListener('value-changed', function(e) {ajax.post('/country', {id: 'country', value: e.detail.value}, null);});});</script>}, html
   end
 
   def test_immediate_object_value
     html = vaadin_combo_box(:big_place, :country, @countries, immediate: true)
-    assert_equal %{<vaadin-combo-box id="big_place_country" name="big_place[country]"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#big_place_country");cb.items = ["Poland","Finland","Germany"];cb.value = "Poland";cb.addEventListener('value-changed', function(e) {ajax.post('/big_place/666/country', {id: 'big_place_country', value: e.detail.value}, serverCallbackResponse);});});</script>}, html
+    assert_equal %{<vaadin-combo-box id="big_place_country" name="big_place[country]"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#big_place_country");cb.items = ["Poland","Finland","Germany"];cb.value = "Poland";cb.addEventListener('value-changed', function(e) {ajax.post('/big_place/666/country', {id: 'big_place_country', value: e.detail.value}, null);});});</script>}, html
   end
 
   def test_immediate_path
     html = vaadin_combo_box(id: "box", immediate: "/~")
+    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/~', {id: 'box', value: e.detail.value}, null);});});</script>}, html
+  end
+
+  def test_immediate_path_callback
+    html = vaadin_combo_box(id: "box", immediate: "/~", use_callback: true)
     assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/~', {id: 'box', value: e.detail.value}, serverCallbackResponse);});});</script>}, html
+  end
+
+  def test_immediate_path_callback_custom
+    html = vaadin_combo_box(id: "box", immediate: "/~", use_callback: 'myCallback')
+    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/~', {id: 'box', value: e.detail.value}, myCallback);});});</script>}, html
   end
 
   def test_immediate_path_replaced
     html = vaadin_combo_box(id: "box", immediate: "/~:id")
-    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/~box', {id: 'box', value: e.detail.value}, serverCallbackResponse);});});</script>}, html
+    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/~box', {id: 'box', value: e.detail.value}, null);});});</script>}, html
   end
 
   def test_path

@@ -75,6 +75,9 @@ module Vaadin
         data = data.send(value_attr) if value_attr
       end
 
+      # default callback is disabled by default
+      default_callback = html_options.delete(:use_callback) || 'null'
+      default_callback = 'serverCallbackResponse' if default_callback === true
 
       # replace placeholders
       if immediate then
@@ -98,7 +101,7 @@ module Vaadin
       js = []
       yield(js, data) if block_given?
       js << "cb.value = #{data.to_json};" if data && !inline_value && !options[:value_as_selection]
-      js << %{cb.addEventListener('#{options[:immediate_event]}', function(e) {ajax.post('#{immediate}', {id: '#{html_options[:id]}', value: e.detail.value}, serverCallbackResponse);});} if immediate
+      js << %{cb.addEventListener('#{options[:immediate_event]}', function(e) {ajax.post('#{immediate}', {id: '#{html_options[:id]}', value: e.detail.value}, #{default_callback});});} if immediate
 
       unless js.empty?
         result += "<script async=\"false\" defer=\"true\">"

@@ -46,17 +46,22 @@ class Vaadin::DatePickerTest < Minitest::Test
 
   def test_object_immediate
     html = vaadin_date_picker(:someday, immediate: true)
-    assert_equal "<vaadin-date-picker id=\"someday\" name=\"someday\" value=\"2012-02-17\"></vaadin-date-picker><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#someday\");cb.addEventListener('value-changed', function(e) {ajax.post('/someday', {id: 'someday', value: e.detail.value}, serverCallbackResponse);});});</script>", html
+    assert_equal "<vaadin-date-picker id=\"someday\" name=\"someday\" value=\"2012-02-17\"></vaadin-date-picker><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#someday\");cb.addEventListener('value-changed', function(e) {ajax.post('/someday', {id: 'someday', value: e.detail.value}, null);});});</script>", html
   end
 
   def test_method_immediate_label
     html = vaadin_date_picker(:thing, :date, label: 'Pick a day', immediate: true)
-    assert_equal "<vaadin-date-picker id=\"thing_date\" name=\"thing[date]\" label=\"Pick a day\" value=\"2014-04-21\"></vaadin-date-picker><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#thing_date\");cb.addEventListener('value-changed', function(e) {ajax.post('/thing/date', {id: 'thing_date', value: e.detail.value}, serverCallbackResponse);});});</script>", html
+    assert_equal "<vaadin-date-picker id=\"thing_date\" name=\"thing[date]\" label=\"Pick a day\" value=\"2014-04-21\"></vaadin-date-picker><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#thing_date\");cb.addEventListener('value-changed', function(e) {ajax.post('/thing/date', {id: 'thing_date', value: e.detail.value}, null);});});</script>", html
+  end
+
+  def test_method_immediate_callback
+    html = vaadin_date_picker(:thing, :date, immediate: true, use_callback: true)
+    assert_equal "<vaadin-date-picker id=\"thing_date\" name=\"thing[date]\" value=\"2014-04-21\"></vaadin-date-picker><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#thing_date\");cb.addEventListener('value-changed', function(e) {ajax.post('/thing/date', {id: 'thing_date', value: e.detail.value}, serverCallbackResponse);});});</script>", html
   end
 
   def test_immediate_custom
     html = vaadin_date_picker(label: "Hello", value: "2012-02-17", immediate: '/update/:id', id: 'this')
-    assert_equal "<vaadin-date-picker label=\"Hello\" value=\"2012-02-17\" id=\"this\"></vaadin-date-picker><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#this\");cb.addEventListener('value-changed', function(e) {ajax.post('/update/this', {id: 'this', value: e.detail.value}, serverCallbackResponse);});});</script>", html
+    assert_equal "<vaadin-date-picker label=\"Hello\" value=\"2012-02-17\" id=\"this\"></vaadin-date-picker><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#this\");cb.addEventListener('value-changed', function(e) {ajax.post('/update/this', {id: 'this', value: e.detail.value}, null);});});</script>", html
   end
 
 end
