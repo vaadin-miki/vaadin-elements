@@ -16,16 +16,7 @@ module Vaadin
     # @param elements [Array<String>] with ids of elements to be bound.
     # @return [String] with JS code.
     def setup_vaadin_elements(*elements)
-      elements = @elements.keys if elements.empty?
-      "function serverCallbackResponse(e) {\n
-         console.log(e);\n
-         var resp = JSON.parse(e);\n
-         for(var oid in resp) {\n
-           var comp = document.querySelector('#'+oid);\n
-           for(var meth in resp[oid]) {\n
-             if(meth in comp) {\n
-             comp[meth] = resp[oid][meth];\n
-       }}}};\n" +
+      elements = (@elements || {}).keys if elements.empty?
           "document.addEventListener(\"WebComponentsReady\", function (e) {\n" +
           elements.collect do |element|
             "var #{element} = document.querySelector(\"##{element}\");\n" +
@@ -51,7 +42,8 @@ module Vaadin
 
       # TODO moment should be imported only if vaadin-date-picker is selected!
       (["<script src=\"#{path_base}webcomponentsjs/webcomponents-lite.min.js\"></script>",
-        "<script src=\"http://momentjs.com/downloads/moment.min.js\"></script>"
+        "<script src=\"http://momentjs.com/downloads/moment.min.js\"></script>",
+        "<script src=\"https://raw.githubusercontent.com/vaadin-miki/vaadin-elements-jsrubyconnector/master/connector.js\"></script>"
       ]+elements.collect { |element| "<link href=\"#{path_base}#{element}/#{element}.html\" rel=\"import\">" }).join("\n")
     end
 
