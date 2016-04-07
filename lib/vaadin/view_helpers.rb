@@ -55,20 +55,11 @@ module Vaadin
       ]+elements.collect { |element| "<link href=\"#{path_base}#{element}/#{element}.html\" rel=\"import\">" }).join("\n")
     end
 
-    ##
-    # Renders HTML of a vaadin combo box.
-    # Uses JS to load the real data.
-    def vaadin_combo_box(object = nil, method = nil, choices = nil, **html_options, &block)
-      # html_options, object = object, nil if method.nil? && choices.nil? && object.is_a?(Hash) && html_options.empty?
-
-      # method may be skipped
-      method, choices = nil, method if choices.nil? && method
-      object, choices = nil, object if choices.nil? && method.nil? && object
-
+    def vaadin_element(name, object, method, html_options, block, **options)
       html_options = (object.nil? ? {} : (method.nil? ? {id: object, name: object} : {id: [object, method].join("_"), name: "#{object}[#{method}]", })).merge(html_options)
 
       # id is required except when the helper is used with no parameters at all
-      raise "combo box must have an id (either implicit or explicit)" unless html_options[:id] || (object.nil? && method.nil? && choices.nil? && !html_options[:immediate])
+      raise "#{name} must have an id (either implicit or explicit)" unless html_options[:id] || (object.nil? && method.nil? && !html_options[:immediate] && (options[:condition].nil? || options[:condition].call))
 
       # custom value
       value_attr = html_options[:item_value_path]
@@ -86,26 +77,32 @@ module Vaadin
                     "/#{object}/#{method}"
                   end if immediate === true
 
-      # replace placeholders
-      immediate = immediate.gsub(':id', html_options[:id].to_s).gsub(':event', "value-changed") if immediate
-
-      attributes = html_options.collect { |att, val| "#{att.to_s.gsub("_", "-")}=\"#{val}\"" }.join(" ")
-
-      result = "<vaadin-combo-box"
-      result += " "+attributes unless attributes.empty?
-      result += ">"
-      result += yield if block_given?
-      result += "</vaadin-combo-box>"
-
+      # get the actual value
       if data then
         data = data.send(method) if method && data.respond_to?(method)
         data = data.send(value_attr) if value_attr
       end
 
+
+      # replace placeholders
+      immediate = immediate.gsub(':id', html_options[:id].to_s).gsub(':event', "value-changed") if immediate
+
+      inline_value = options.delete(:value_as)
+      # value may be inlined
+      html_options[inline_value] = data if data && inline_value
+
+      attributes = html_options.collect { |att, val| "#{att.to_s.gsub("_", "-")}=\"#{val}\"" }.join(" ")
+
+      result = "<vaadin-#{name}"
+      result += " "+attributes unless attributes.empty?
+      result += ">"
+      result += block.call if block
+      result += "</vaadin-#{name}>"
+
       # build js
       js = []
-      js << "cb.items = #{choices.to_json};" if choices && !choices.empty?
-      js << "cb.value = #{data.to_json};" if data
+      yield(js) if block_given?
+      js << "cb.value = #{data.to_json};" if data && !inline_value
       js << %{cb.addEventListener('value-changed', function(e) {ajax.post('#{immediate}', {id: '#{html_options[:id]}', value: e.detail.value}, serverCallbackResponse);});} if immediate
 
       unless js.empty?
@@ -116,6 +113,26 @@ module Vaadin
       end
       result
     end
+
+    ##
+    # Renders HTML of a vaadin combo box.
+    # Uses JS to load the real data.
+    def vaadin_combo_box(object = nil, method = nil, choices = nil, **html_options, &block)
+
+      # method may be skipped
+      method, choices = nil, method if choices.nil? && method
+      object, choices = nil, object if choices.nil? && method.nil? && object
+
+      vaadin_element('combo-box', object, method, html_options, block, condition: ->() { choices.nil? || choices.empty? }) do |js|
+        js << "cb.items = #{choices.to_json};" if choices && !choices.empty?
+      end
+
+    end
+
+    def vaadin_date_picker(object = nil, method = nil, **html_options, &block)
+      vaadin_element('date-picker', object, method, html_options, block, value_as: 'value')
+    end
+
   end
 
 end
