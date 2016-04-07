@@ -101,8 +101,8 @@ module Vaadin
 
       # build js
       js = []
-      yield(js) if block_given?
-      js << "cb.value = #{data.to_json};" if data && !inline_value
+      yield(js, data) if block_given?
+      js << "cb.value = #{data.to_json};" if data && !inline_value && !options[:value_as_selection]
       js << %{cb.addEventListener('value-changed', function(e) {ajax.post('#{immediate}', {id: '#{html_options[:id]}', value: e.detail.value}, serverCallbackResponse);});} if immediate
 
       unless js.empty?
@@ -114,23 +114,37 @@ module Vaadin
       result
     end
 
-    ##
-    # Renders HTML of a vaadin combo box.
-    # Uses JS to load the real data.
-    def vaadin_combo_box(object = nil, method = nil, choices = nil, **html_options, &block)
-
+    def vaadin_collection_element(name, object, method, choices, html_options, block, **options, &extra_js)
       # method may be skipped
       method, choices = nil, method if choices.nil? && method
       object, choices = nil, object if choices.nil? && method.nil? && object
 
-      vaadin_element('combo-box', object, method, html_options, block, condition: ->() { choices.nil? || choices.empty? }) do |js|
-        js << "cb.items = #{choices.to_json};" if choices && !choices.empty?
-      end
+      options[:column_names] = html_options.delete(:column_names)
 
+      vaadin_element(name, object, method, html_options, block, options.merge(condition: ->() { choices.nil? || choices.empty? })) do |js, data|
+        if choices && !choices.empty? then
+          js << "cb.items = #{choices.to_json};"
+          js << "cb.selection.select(#{choices.find_index { |e| e == data }});" if data && options[:value_as_selection]
+          js << "cb.columns = #{options[:column_names].collect { |name| {name: name} }.to_json};" if options[:column_names]
+        end
+
+        extra_js.call(js, data) if extra_js
+      end
+    end
+
+    ##
+    # Renders HTML of a vaadin combo box.
+    # Uses JS to load the real data.
+    def vaadin_combo_box(object = nil, method = nil, choices = nil, **html_options, &block)
+      vaadin_collection_element("combo-box", object, method, choices, html_options, block)
     end
 
     def vaadin_date_picker(object = nil, method = nil, **html_options, &block)
       vaadin_element('date-picker', object, method, html_options, block, value_as: 'value')
+    end
+
+    def vaadin_grid(object = nil, method = nil, choices = nil, **html_options, &block)
+      vaadin_collection_element("grid", object, method, choices, html_options, block, value_as_selection: true)
     end
 
   end
