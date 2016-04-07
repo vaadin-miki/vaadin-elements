@@ -28,9 +28,60 @@ Require elements:
 
 Include helpers (Sinatra):
 
-`include Vaadin::ViewHelpers`
+`helpers Vaadin::ViewHelpers`
 
-Set up elements:
+Import the elements (erb):
+
+```<head>
+     ...
+     <%= import_vaadin_elements %>
+     ...
+   </head>
+   <body>
+     ...
+   </body>
+```
+
+### Combo box
+
+`vaadin_combo_box :object, :method, choices, html_options` - parameter `method` is optional; optional block can be given - it will be inserted between the element tags
+
+Supported options:
+
+* `item_value_path` and `item_label_path` - specify attribute from the collection that will be used as value and caption of an item, respectively
+* `immediate` - either `true` or a path to post data to immediately on value change; default route is REST-like (object/id/method), with POSTed id of the component and value; response should be valid JSON for server callback
+* `id` - to overwrite the default id or provide a custom one (required when `immediate`)
+
+Only `value-changed` event is supported this way.
+
+### Date picker
+
+`vaadin_date_picker :object, :method, html_options` - parameter `method` is optional; optional block can be given - it will be inserted between the element tags
+
+Supported options:
+
+* `label` - caption of the component
+* `immediate` - either `true` or a path to post data to immediately on value change; default route is REST-like (object/id/method), with POSTed id of the component and value; response should be valid JSON for server callback
+* `id` - to overwrite the default id or provide a custom one (required when `immediate`)
+
+Only `value-changed` event is supported this way.
+
+### Grid
+
+`vaadin_grid :object, :method, choices, html_options` - parameter `method` is optional; optional block can be given - it will be inserted between the element tags
+
+Supported options:
+
+* `column_names` - array of strings with names of columns to show (they will be humanised before outputting: "first_name" -> "First Name")
+* `id` - to overwrite the default id or provide a custom one
+
+Currently no events are supported from the grid.
+
+## DISCOURAGED: Legacy usage
+
+Please note that this is now a discouraged way of using Vaadin::Elements, as it mixes the logic related to UI components with the main code of the application. However, it gives almost full control over what and how everything will be rendered, and it is possible to listen to non-standard events this way.
+
+Set up elements (this should be an instance variable in the application code):
 
 `@elements = Vaadin::Elements.new`
 
@@ -59,13 +110,14 @@ Setup the view (erb example):
    </body>
 ```
 
-## Supported components
+### Supported components
 
 * ComboBox - `<vaadin-combo-box>`, `@elements.myComboBox = Vaadin::Elements.combo_box`
 * Grid - `<vaadin-grid>`, `@elements.myGrid = Vaadin::Elements.grid`
 * DatePicker - `<vaadin-date-picker>`, `@elements.myDatePicker = Vaadin::Elements.date_picker`
 
 The properties of all components can also be created with `Vaadin::Elements.new`. The advantages of using dedicated helpers are:
+
 * the properties that can be set are limited to only those that the corresponding element has
 * the `value-changed` event is listened to by default
 
@@ -81,8 +133,8 @@ In either case a POST request is made. `:id` and `:event` are replaced with the 
 There is plenty of limitations at the moment and pretty much anything can change. For issues not listed here, file an issue.
 
 Major limitations:
+
 * An object passed to the grid or combo box must have a valid `to_json` implementation.
-* The controller code is polluted with elements code. Issue #3, when implemented, will move all code related to elements to the view.
 
 ## Development
 
