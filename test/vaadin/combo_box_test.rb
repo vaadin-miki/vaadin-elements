@@ -131,4 +131,22 @@ class Vaadin::ComboBoxTest < Minitest::Test
     assert_equal %{<vaadin-combo-box id="miasto" name="miasto" item-label-path="name" item-value-path="code"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#miasto");cb.items = [{"code":"GDN","name":"Gdańsk"},{"code":"TKU","name":"Turku"},{"code":"MUC","name":"Muenchen"}];});</script>}, html
   end
 
+  def test_open_event
+    skip "not yet implemented"
+    html = vaadin_combo_box(id: "box", events: {vaadin_open_event: "/~:event"})
+    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('vaadin-open-event', function(e) {ajax.post('/~vaadin-open-event', {id: 'box', value: e.detail.value}, null);});});</script>}, html
+  end
+
+  def test_changed_path_event
+    skip "not yet implemented"
+    html = vaadin_combo_box(id: "box", events: {value_changed: "/~"})
+    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/~', {id: 'box', value: e.detail.value}, null);});});</script>}, html
+  end
+
+  def test_open_changed_event_callback
+    skip "not yet implemented"
+    html = vaadin_combo_box(id: "box", events: {value_changed: '/~', vaadin_close_event: '/~'}, use_callback: true)
+    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/~', {id: 'box', value: e.detail.value}, serverResponseCallback);});cb.addEventListener('vaadin-open-event', function(e) {ajax.post('/~', {id: 'box', value: e.detail.value}, serverResponseCallback);});});</script>}, html
+  end
+
 end

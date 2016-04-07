@@ -85,6 +85,7 @@ module Vaadin
         immediate = immediate.gsub(':id', html_options[:id].to_s).gsub(':event', options[:immediate_event])
       end
 
+
       inline_value = options.delete(:value_as)
       # value may be inlined
       html_options[inline_value] = data if data && inline_value
