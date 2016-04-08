@@ -48,7 +48,7 @@ module Vaadin
     end
 
     def vaadin_element(name, object, method, html_options, block, **options)
-      html_options = (object.nil? ? {} : (method.nil? ? {id: object, name: object} : {id: [object, method].join("_"), name: "#{object}[#{method}]", })).merge(html_options)
+      html_options = (object.nil? ? {} : (method.nil? ? {id: object, name: object} : {id: [object, method].join('_'), name: "#{object}[#{method}]", })).merge(html_options)
 
       # id is required except when the helper is used with no parameters at all
       raise "#{name} must have an id (either implicit or explicit)" unless html_options[:id] || (object.nil? && method.nil? && !html_options[:immediate] && (options[:condition].nil? || options[:condition].call))
@@ -61,13 +61,27 @@ module Vaadin
       immediate = html_options.delete :immediate
 
       data = instance_variable_get("@#{object}") rescue nil
-      immediate = if data && data.respond_to?(:id) then
-                    "/#{object}/#{data.id}" + (method.nil? ? "" : "/#{method}")
-                  elsif method.nil? then
-                    "/#{object || html_options[:id]}"
-                  else
-                    "/#{object}/#{method}"
-                  end if immediate === true
+
+      # other events - immediate is a syntax sugar for value-changed
+      events = html_options.delete(:events) || {}
+      events[options.delete(:immediate_event) || 'value-changed'] = immediate
+      events.reject! { |_, value| value.nil? }
+
+      # default callback is disabled by default
+      default_callback = html_options.delete(:use_callback) || 'null'
+      default_callback = 'serverCallbackResponse' if default_callback === true
+
+      # replace placeholders and construct default event routes
+      events.each do |key, value|
+        value = if data && data.respond_to?(:id) then
+                  "/#{object}/#{data.id}" + (method.nil? ? '' : "/#{method}")
+                elsif method.nil? then
+                  "/#{object || html_options[:id]}"
+                else
+                  "/#{object}/#{method}"
+                end if value === true
+        events[key] = value.gsub(':id', html_options[:id].to_s).gsub(':event', key.to_s.gsub('_', '-'))
+      end unless events.empty?
 
       # get the actual value
       if data then
@@ -75,26 +89,15 @@ module Vaadin
         data = data.send(value_attr) if value_attr
       end
 
-      # default callback is disabled by default
-      default_callback = html_options.delete(:use_callback) || 'null'
-      default_callback = 'serverCallbackResponse' if default_callback === true
-
-      # replace placeholders
-      if immediate then
-        options[:immediate_event] ||= 'value-changed'
-        immediate = immediate.gsub(':id', html_options[:id].to_s).gsub(':event', options[:immediate_event])
-      end
-
-
       inline_value = options.delete(:value_as)
       # value may be inlined
       html_options[inline_value] = data if data && inline_value
 
-      attributes = html_options.collect { |att, val| "#{att.to_s.gsub("_", "-")}=\"#{val}\"" }.join(" ")
+      attributes = html_options.collect { |att, val| "#{att.to_s.gsub('_', '-')}=\"#{val}\"" }.join(' ')
 
       result = "<vaadin-#{name}"
-      result += " "+attributes unless attributes.empty?
-      result += ">"
+      result += ' '+attributes unless attributes.empty?
+      result += '>'
       result += block.call if block
       result += "</vaadin-#{name}>"
 
@@ -102,13 +105,13 @@ module Vaadin
       js = []
       yield(js, data) if block_given?
       js << "cb.value = #{data.to_json};" if data && !inline_value && !options[:value_as_selection]
-      js << %{cb.addEventListener('#{options[:immediate_event]}', function(e) {ajax.post('#{immediate}', {id: '#{html_options[:id]}', value: e.detail.value}, #{default_callback});});} if immediate
+      events.each { |event, route| js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.detail.value}, #{default_callback});});} }
 
       unless js.empty?
         result += "<script async=\"false\" defer=\"true\">"
         result += "document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"##{html_options[:id]}\");"
-        result +=js.join("")
-        result += "});</script>"
+        result +=js.join('')
+        result += '});</script>'
       end
       result
     end
@@ -135,7 +138,7 @@ module Vaadin
     # Renders HTML of a vaadin combo box.
     # Uses JS to load the real data.
     def vaadin_combo_box(object = nil, method = nil, choices = nil, **html_options, &block)
-      vaadin_collection_element("combo-box", object, method, choices, html_options, block)
+      vaadin_collection_element('combo-box', object, method, choices, html_options, block)
     end
 
     def vaadin_date_picker(object = nil, method = nil, **html_options, &block)
@@ -143,7 +146,7 @@ module Vaadin
     end
 
     def vaadin_grid(object = nil, method = nil, choices = nil, **html_options, &block)
-      vaadin_collection_element("grid", object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed')
+      vaadin_collection_element('grid', object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed')
     end
 
   end

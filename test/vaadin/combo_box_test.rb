@@ -132,21 +132,18 @@ class Vaadin::ComboBoxTest < Minitest::Test
   end
 
   def test_open_event
-    skip "not yet implemented"
     html = vaadin_combo_box(id: "box", events: {vaadin_open_event: "/~:event"})
     assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('vaadin-open-event', function(e) {ajax.post('/~vaadin-open-event', {id: 'box', value: e.detail.value}, null);});});</script>}, html
   end
 
   def test_changed_path_event
-    skip "not yet implemented"
     html = vaadin_combo_box(id: "box", events: {value_changed: "/~"})
     assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/~', {id: 'box', value: e.detail.value}, null);});});</script>}, html
   end
 
-  def test_open_changed_event_callback
-    skip "not yet implemented"
-    html = vaadin_combo_box(id: "box", events: {value_changed: '/~', vaadin_close_event: '/~'}, use_callback: true)
-    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/~', {id: 'box', value: e.detail.value}, serverResponseCallback);});cb.addEventListener('vaadin-open-event', function(e) {ajax.post('/~', {id: 'box', value: e.detail.value}, serverResponseCallback);});});</script>}, html
+  def test_close_changed_event_callback
+    html = vaadin_combo_box(id: "box", events: {value_changed: '/~', vaadin_close_event: '/~:event'}, use_callback: true)
+    assert_equal %{<vaadin-combo-box id="box"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#box");cb.addEventListener('value-changed', function(e) {ajax.post('/~', {id: 'box', value: e.detail.value}, serverCallbackResponse);});cb.addEventListener('vaadin-close-event', function(e) {ajax.post('/~vaadin-close-event', {id: 'box', value: e.detail.value}, serverCallbackResponse);});});</script>}, html
   end
 
 end

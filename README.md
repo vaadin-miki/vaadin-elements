@@ -52,8 +52,9 @@ Supported options:
 * `immediate` - either `true` or a path to post data to immediately on value change; default route is REST-like (object/id/method), with POSTed id of the component and value; response should be valid JSON for server callback
 * `id` - to overwrite the default id or provide a custom one (required when `immediate`)
 * `use_callback` - either `true` or a name of a JavaScript available function to call with the response; when `true`, default `serverCallbackResponse` is used and it expects `application/json` as response type
+* `events` - map of `event_name: true_or_path` with handled events; `value-changed` events can be declared this way, too (though `immediate` has a higher precedence and is recommended)
 
-Only `value-changed` event is supported this way.
+All events are supported.
 
 ### Date picker
 
@@ -65,8 +66,9 @@ Supported options:
 * `immediate` - either `true` or a path to post data to immediately on value change; default route is REST-like (object/id/method), with POSTed id of the component and value; response should be valid JSON for server callback
 * `id` - to overwrite the default id or provide a custom one (required when `immediate`)
 * `use_callback` - either `true` or a name of a JavaScript available function to call with the response; when `true`, default `serverCallbackResponse` is used and it expects `application/json` as response type
+* `events` - map of `event_name: true_or_path` with handled events; `value-changed` events can be declared this way, too (though `immediate` has a higher precedence and is recommended)
 
-Only `value-changed` event is supported this way.
+All events are supported.
 
 ### Grid
 
@@ -132,11 +134,12 @@ In either case a POST request is made. `:id` and `:event` are replaced with the 
 
 ## Limitations
 
-There is plenty of limitations at the moment and pretty much anything can change. For issues not listed here, file an issue.
+There is plenty of limitations at the moment and pretty much anything can change. For things not listed here, file an issue.
 
 Major limitations:
 
 * An object passed to the grid or combo box must have a valid `to_json` implementation.
+* Date `value-changed` event sends a `String` when using a helper.
 
 ## Development
 
