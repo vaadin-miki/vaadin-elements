@@ -32,15 +32,19 @@ Include helpers (Sinatra):
 
 Import the elements (erb):
 
-```<head>
-     ...
-     <%= import_vaadin_elements %>
-     ...
-   </head>
-   <body>
-     ...
-   </body>
-```
+
+    <head>
+      ...
+      <%= import_vaadin_elements %>
+      ...
+    </head>
+    <body>
+      ...
+      <%= vaadin_combo_box :person, :country, Country.find_all, item_value_path: id, item_label_path: name, immediate: true %>
+      ...
+    </body>
+
+Helpers are expected to be used mainly in views.
 
 ### Combo box
 
@@ -67,6 +71,7 @@ Supported options:
 * `id` - to overwrite the default id or provide a custom one (required when `immediate`)
 * `use_callback` - either `true` or a name of a JavaScript available function to call with the response; when `true`, default `serverCallbackResponse` is used and it expects `application/json` as response type
 * `events` - map of `event_name: true_or_path` with handled events; `value-changed` events can be declared this way, too (though `immediate` has a higher precedence and is recommended)
+* `month_names`, `weekdays_short`, `first_day_of_week`, `today`, `cancel` - options to pass to `i18n` of the date picker that contain month names, short weekday names, number of the first day of the week (0 is Sunday), and captions for _Today_ and _Cancel_ buttons, respectively; note that these are set up once the component is ready
 
 All events are supported.
 
@@ -99,20 +104,19 @@ Or set up properties in the code:
 
 Setup the view (erb example):
 
-```<head>
-     ...
-     <%= import_vaadin_elements %>
-     ...
-   </head>
-   <body>
-     ...
-     <vaadin-combo-box id="myComboBox"></vaadin-combo-box>
-     ...
-     <script>
-       <%= setup_vaadin_elements %>
-     </script>
-   </body>
-```
+    <head>
+      ...
+      <%= import_vaadin_elements %>
+      ...
+    </head>
+    <body>
+      ...
+      <vaadin-combo-box id="myComboBox"></vaadin-combo-box>
+      ...
+      <script>
+        <%= setup_vaadin_elements %>
+      </script>
+    </body>
 
 ### Supported components
 
