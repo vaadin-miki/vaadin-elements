@@ -232,3 +232,12 @@ class Hash
     self[key] = self[key]
   end
 end
+
+class String
+  ##
+  # Converts a string from underscore_notation to camelCase
+  def camel_case
+    parts = self.split("_")
+    parts[0] + parts[1..-1].collect { |part| part[0].upcase+part[1..-1] }.join("")
+  end
+end

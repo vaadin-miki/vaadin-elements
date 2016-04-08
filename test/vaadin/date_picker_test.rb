@@ -39,9 +39,19 @@ class Vaadin::DatePickerTest < Minitest::Test
     assert_equal %{<vaadin-date-picker id="someday" name="someday" value="2012-02-17"></vaadin-date-picker>}, html
   end
 
+  def test_object_i18n
+    html = vaadin_date_picker(:someday, month_names: %w{styczeń luty marzec kwiecień maj czerwiec lipiec sierpień wrzesień październik listopad grudzień})
+    assert_equal %{<vaadin-date-picker id="someday" name="someday" value="2012-02-17"></vaadin-date-picker><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#someday");cb.i18n.monthNames = ["styczeń","luty","marzec","kwiecień","maj","czerwiec","lipiec","sierpień","wrzesień","październik","listopad","grudzień"];});</script>}, html
+  end
+
   def test_method
     html = vaadin_date_picker(:thing, :date, id: "this_is_it")
     assert_equal %{<vaadin-date-picker id="this_is_it" name="thing[date]" value="2014-04-21"></vaadin-date-picker>}, html
+  end
+
+  def test_method_i18n
+    html = vaadin_date_picker(:thing, :date, id: "this_is_it", today: "Now", cancel: "Nevermind!")
+    assert_equal %{<vaadin-date-picker id="this_is_it" name="thing[date]" value="2014-04-21"></vaadin-date-picker><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#this_is_it");cb.i18n.today = "Now";cb.i18n.cancel = "Nevermind!";});</script>}, html
   end
 
   def test_object_immediate

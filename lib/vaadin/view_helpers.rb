@@ -93,6 +93,18 @@ module Vaadin
       # value may be inlined
       html_options[inline_value] = data if data && inline_value
 
+      # some attributes are converted to js for setup
+      js_attributes = {}
+      (options[:js_attributes] || {}).each do |jsatt, rubyatts|
+        rubyatts = jsatt if rubyatts === true
+        rubyatts = [rubyatts] unless rubyatts.is_a?(Array)
+        rubyatts = rubyatts.select { |att| html_options.include?(att) }
+        jsatt = jsatt.to_s.camel_case
+        js_attributes[jsatt] = {} unless rubyatts.empty?
+        rubyatts.each { |att| js_attributes[jsatt][att.to_s.camel_case] = html_options.delete(att) }
+      end
+
+      # put as attributes
       attributes = html_options.collect { |att, val| "#{att.to_s.gsub('_', '-')}=\"#{val}\"" }.join(' ')
 
       result = "<vaadin-#{name}"
@@ -106,6 +118,13 @@ module Vaadin
       yield(js, data) if block_given?
       js << "cb.value = #{data.to_json};" if data && !inline_value && !options[:value_as_selection]
       events.each { |event, route| js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.detail.value}, #{default_callback});});} }
+      js_attributes.each do |att, value|
+        if value.is_a?(Hash)
+          value.each { |meth, param| js << "cb.#{att}.#{meth} = #{param.to_json};" }
+        elsif value
+          js << "cb.#{att} = #{value.to_json}"
+        end
+      end
 
       unless js.empty?
         result += "<script async=\"false\" defer=\"true\">"
@@ -142,7 +161,7 @@ module Vaadin
     end
 
     def vaadin_date_picker(object = nil, method = nil, **html_options, &block)
-      vaadin_element('date-picker', object, method, html_options, block, value_as: 'value')
+      vaadin_element('date-picker', object, method, html_options, block, value_as: 'value', js_attributes: {i18n: %i{month_names weekdays_short first_day_of_week today cancel}})
     end
 
     def vaadin_grid(object = nil, method = nil, choices = nil, **html_options, &block)

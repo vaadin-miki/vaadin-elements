@@ -163,4 +163,8 @@ class Vaadin::ExtensionsTest < Minitest::Test
     assert_equal '2014-04-21', other.date
   end
 
+  def test_camel_case
+    assert_equal "thisIsCamelCase", "this_is_camel_case".camel_case
+  end
+
 end
