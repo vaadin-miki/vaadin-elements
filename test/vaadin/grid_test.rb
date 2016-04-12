@@ -41,6 +41,11 @@ class Vaadin::GridTest < Minitest::Test
     assert_equal "<vaadin-grid></vaadin-grid>", html
   end
 
+  def test_id_column_names
+    html = vaadin_grid id: "grid", column_names: %w{foo bar}
+    assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.columns = [{\"name\":\"foo\"},{\"name\":\"bar\"}];});</script>", html
+  end
+
   def test_choices
     html = vaadin_grid @countries, id: "grid"
     assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];});</script>", html

@@ -146,8 +146,8 @@ module Vaadin
         if choices && !choices.empty? then
           js << "cb.items = #{choices.to_json};"
           js << "cb.selection.select(#{choices.find_index { |e| e == data }});" if data && options[:value_as_selection]
-          js << "cb.columns = #{options[:column_names].collect { |name| {name: name} }.to_json};" if options[:column_names]
         end
+        js << "cb.columns = #{options[:column_names].collect { |n| {name: n} }.to_json};" if options[:column_names]
 
         extra_js.call(js, data) if extra_js
       end
