@@ -168,6 +168,15 @@ module Vaadin
       vaadin_collection_element('grid', object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed')
     end
 
+    def icon icon_set, key = nil
+      icon_set, key = 'vaadin-icons', icon_set unless key
+      "<iron-icon icon=\"#{icon_set.to_s.gsub("_", "-")}:#{key.to_s.gsub("_", "-")}\"></iron-icon>"
+    end
+
+    def vaadin_icon *keys
+      keys.collect { |key| icon :vaadin_icons, key }.join
+    end
+
   end
 
 end
