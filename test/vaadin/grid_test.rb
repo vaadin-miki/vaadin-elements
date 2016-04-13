@@ -76,4 +76,9 @@ class Vaadin::GridTest < Minitest::Test
     assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];cb.addEventListener('selected-items-changed', function(e) {ajax.post('/grid', {id: 'grid', value: e.detail.value}, gridCallback);});});</script>", html
   end
 
+  def test_lazy_loading
+    html = vaadin_grid id: 'grid', lazy_load: '/lazy'
+    assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = function(params, callback) {ajax.post(\"/lazy\", params, function(e) {var json = JSON.parse(e);callback(json.result, json.size);});};});</script>", html
+  end
+
 end

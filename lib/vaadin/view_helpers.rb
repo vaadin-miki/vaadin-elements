@@ -141,6 +141,9 @@ module Vaadin
       object, choices = nil, object if choices.nil? && method.nil? && object
 
       options[:column_names] = html_options.delete(:column_names)
+      options[:lazy_load] = html_options.delete(:lazy_load)
+      options[:lazy_load], choices = choices, nil if choices.is_a?(String)
+      options.delete[:lazy_load] unless options[:lazy_load].is_a?(String)
 
       vaadin_element(name, object, method, html_options, block, options.merge(condition: ->() { choices.nil? || choices.empty? })) do |js, data|
         if choices && !choices.empty? then
@@ -148,6 +151,7 @@ module Vaadin
           js << "cb.selection.select(#{choices.find_index { |e| e == data }});" if data && options[:value_as_selection]
         end
         js << "cb.columns = #{options[:column_names].collect { |n| {name: n} }.to_json};" if options[:column_names]
+        js << "cb.items = function(params, callback) {ajax.post(\"#{options[:lazy_load]}\", params, function(e) {var json = JSON.parse(e);callback(json.result, json.size);});};" if options[:lazy_load]
 
         extra_js.call(js, data) if extra_js
       end
