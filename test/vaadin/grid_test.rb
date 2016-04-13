@@ -81,4 +81,9 @@ class Vaadin::GridTest < Minitest::Test
     assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = function(params, callback) {ajax.post(\"/lazy\", params, function(e) {var json = JSON.parse(e);callback(json.result, json.size);});};});</script>", html
   end
 
+  def test_lazy_loading_string
+    html = vaadin_grid :person, :nationality, '/lazy_load', id: 'grid'
+    assert_equal "<vaadin-grid id=\"grid\" name=\"person[nationality]\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = function(params, callback) {ajax.post(\"/lazy_load\", params, function(e) {var json = JSON.parse(e);callback(json.result, json.size);});};});</script>", html
+  end
+
 end

@@ -143,7 +143,7 @@ module Vaadin
       options[:column_names] = html_options.delete(:column_names)
       options[:lazy_load] = html_options.delete(:lazy_load)
       options[:lazy_load], choices = choices, nil if choices.is_a?(String)
-      options.delete[:lazy_load] unless options[:lazy_load].is_a?(String)
+      options.delete(:lazy_load) unless options[:lazy_load].is_a?(String)
 
       vaadin_element(name, object, method, html_options, block, options.merge(condition: ->() { choices.nil? || choices.empty? })) do |js, data|
         if choices && !choices.empty? then
