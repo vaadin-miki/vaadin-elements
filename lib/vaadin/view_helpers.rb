@@ -38,7 +38,7 @@ module Vaadin
     def import_vaadin_elements(*elements)
       elements = Vaadin::Elements::AVAILABLE if elements.empty?
       path_elements = elements + ['components']
-      path_base = 'http://polygit2.appspot.com/polymer+v1.3.1/' + path_elements.join('+vaadin+*/')+'/'
+      path_base = 'http://polygit2.appspot.com/polymer+:master/' + path_elements.join('+vaadin+*/')+'/'
 
       # TODO moment should be imported only if vaadin-date-picker is selected!
       (["<script src=\"#{path_base}webcomponentsjs/webcomponents-lite.min.js\"></script>",
