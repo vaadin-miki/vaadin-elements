@@ -34,17 +34,16 @@ module Vaadin
     # Generates imports for specified element types. If the specified types are not provided, all supported types will be imported (as defined in Vaadin::Elements::AVAILABLE.)
     #
     # @oaram elements [Array<String>] with element types to import.
-    # @return [String] with JS code.
+    # @return [String] with HTML code.
     def import_vaadin_elements(*elements)
       elements = Vaadin::Elements::AVAILABLE if elements.empty?
-      path_elements = elements + ['components']
-      path_base = 'http://polygit2.appspot.com/polymer+v1.3.1/' + path_elements.join('+vaadin+*/')+'/'
+      path_base = 'https://cdn.vaadin.com/vaadin-core-elements/'
 
       # TODO moment should be imported only if vaadin-date-picker is selected!
-      (["<script src=\"#{path_base}webcomponentsjs/webcomponents-lite.min.js\"></script>",
+      (["<script src=\"#{path_base}latest/webcomponentsjs/webcomponents-lite.min.js\"></script>",
         "<script src=\"http://momentjs.com/downloads/moment.min.js\"></script>",
         "<script src=\"https://raw.githubusercontent.com/vaadin-miki/vaadin-elements-jsrubyconnector/master/connector.js\"></script>"
-      ]+elements.collect { |element| "<link href=\"#{path_base}#{element}/#{element}.html\" rel=\"import\">" }).join("\n")
+      ]+elements.collect { |element| "<link href=\"#{path_base}master/#{element}/#{element}.html\" rel=\"import\">" }).join("\n")
     end
 
     def vaadin_element(name, object, method, html_options, block, **options)
