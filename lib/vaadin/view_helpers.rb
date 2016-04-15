@@ -180,6 +180,11 @@ module Vaadin
       keys.collect { |key| icon :vaadin_icons, key }.join
     end
 
+    def vaadin_upload(target = nil, **html_options, &block)
+      html_options[:target] = target unless html_options.include?(:target) || target.nil?
+      vaadin_element('upload', nil, nil, html_options, block, immediate_event: 'upload-success')
+    end
+
   end
 
 end
