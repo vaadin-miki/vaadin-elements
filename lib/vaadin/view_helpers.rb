@@ -95,12 +95,19 @@ module Vaadin
       # some attributes are converted to js for setup
       js_attributes = {}
       (options[:js_attributes] || {}).each do |jsatt, rubyatts|
-        rubyatts = jsatt if rubyatts === true
-        rubyatts = [rubyatts] unless rubyatts.is_a?(Array)
-        rubyatts = rubyatts.select { |att| html_options.include?(att) }
-        jsatt = jsatt.to_s.camel_case
-        js_attributes[jsatt] = {} unless rubyatts.empty?
-        rubyatts.each { |att| js_attributes[jsatt][att.to_s.camel_case] = html_options.delete(att) }
+        # attributes that are supported as provided
+        if rubyatts === true then
+          js_attributes[jsatt] = html_options.delete(jsatt) if html_options.has_key?(jsatt)
+          js_attributes[jsatt] = js_attributes[jsatt].press('.') if js_attributes[jsatt].is_a?(Hash)
+        else
+          # attributes that are inlined into helper attributes
+          rubyatts = jsatt if rubyatts === true
+          rubyatts = [rubyatts] unless rubyatts.is_a?(Array)
+          rubyatts = rubyatts.select { |att| html_options.include?(att) }
+          jsatt = jsatt.to_s.camel_case
+          js_attributes[jsatt] = {} unless rubyatts.empty?
+          rubyatts.each { |att| js_attributes[jsatt][att.to_s.camel_case] = html_options.delete(att) }
+        end
       end
 
       options[:event_detail] ||= 'value'
@@ -124,7 +131,7 @@ module Vaadin
       events.each { |event, route| js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.#{event_detail}}, #{default_callback});});} }
       js_attributes.each do |att, value|
         if value.is_a?(Hash)
-          value.each { |meth, param| js << "cb.#{att}.#{meth} = #{param.to_json};" }
+          value.each { |meth, param| js << "cb.#{att}.#{meth.to_s.camel_case} = #{param.to_json};" }
         elsif value
           js << "cb.#{att} = #{value.to_json}"
         end
@@ -187,7 +194,7 @@ module Vaadin
 
     def vaadin_upload(target = nil, **html_options, &block)
       html_options[:target] = target unless html_options.include?(:target) || target.nil?
-      vaadin_element('upload', nil, nil, html_options, block, immediate_event: 'upload-success', event_detail: '')
+      vaadin_element('upload', nil, nil, html_options, block, immediate_event: 'upload-success', event_detail: '', js_attributes: {i18n: true})
     end
 
   end
