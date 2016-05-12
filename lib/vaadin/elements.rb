@@ -19,7 +19,7 @@ module Vaadin
     ##
     # Currently supported Vaadin Elements.
     #
-    AVAILABLE = %w{vaadin-grid vaadin-combo-box vaadin-date-picker vaadin-icons}
+    AVAILABLE = %w{vaadin-grid vaadin-combo-box vaadin-date-picker vaadin-icons vaadin-upload}
 
     include HashKeysAsMethods
     include RememberHashChanges

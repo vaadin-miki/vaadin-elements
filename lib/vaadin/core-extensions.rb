@@ -38,9 +38,9 @@ module HashKeysAsMethods
     params = params.first if params.size == 1
 
     # call block or use params if provided, and is assigning
-    return self[name[0..-2]] = ((block && block.call(binding)) || params) if name.to_s.end_with?("=")
+    return self[name[0..-2]] = ((block && block.call(binding)) || params) if name.to_s.end_with?('=')
     # boolean check if ends with ?
-    return !self[name[0..-2]].nil? if name.to_s.end_with?("?")
+    return !self[name[0..-2]].nil? if name.to_s.end_with?('?')
     # return value otherwise
     self[name]
   end
@@ -66,7 +66,7 @@ module HashWithLimitedKeys
   end
 
   # both []= and [] have a side effect of limiting the value if it happens to limit keys as well
-  ["[]=(name, value)", "[](name)"].each { |sig| class_eval(<<METH) }
+  ['[]=(name, value)', '[](name)'].each { |sig| class_eval(<<METH) }
   def #{sig}
     with_this(super) {|result| result.allowed_keys = allowed_keys[name] if result && result.is_a?(HashWithLimitedKeys) && allowed_keys && allowed_keys[name]}  if allowed_keys.nil? || allowed_keys.include?(name)
   end
@@ -224,6 +224,12 @@ class Object
   end
 end
 
+class Symbol
+  def +(other)
+    (self.to_s+other.to_s).to_sym
+  end
+end
+
 class Hash
   ##
   # Appends given key with current default value
@@ -231,13 +237,31 @@ class Hash
   def << key
     self[key] = self[key]
   end
+
+  ##
+  # Presses the map recursively into a map without nested hashes
+  def press(separator = '.')
+    result = {}
+    needs_more = false
+    self.each do |key, value|
+      if value.is_a?(Hash) then
+        needs_more = true
+        value.each do |nested_key, nested_value|
+          result[key+separator+nested_key] = nested_value
+        end
+      else
+        result[key] = value
+      end
+    end
+    needs_more ? result.press(separator) : result
+  end
 end
 
 class String
   ##
   # Converts a string from underscore_notation to camelCase
   def camel_case
-    parts = self.split("_")
-    parts[0] + parts[1..-1].collect { |part| part[0].upcase+part[1..-1] }.join("")
+    parts = self.split('_')
+    parts[0] + parts[1..-1].collect { |part| part[0].upcase+part[1..-1] }.join('')
   end
 end

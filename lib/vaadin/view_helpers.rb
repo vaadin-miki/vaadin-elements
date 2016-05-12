@@ -95,13 +95,25 @@ module Vaadin
       # some attributes are converted to js for setup
       js_attributes = {}
       (options[:js_attributes] || {}).each do |jsatt, rubyatts|
-        rubyatts = jsatt if rubyatts === true
-        rubyatts = [rubyatts] unless rubyatts.is_a?(Array)
-        rubyatts = rubyatts.select { |att| html_options.include?(att) }
-        jsatt = jsatt.to_s.camel_case
-        js_attributes[jsatt] = {} unless rubyatts.empty?
-        rubyatts.each { |att| js_attributes[jsatt][att.to_s.camel_case] = html_options.delete(att) }
+        # attributes that are supported as provided
+        if rubyatts === true then
+          js_attributes[jsatt] = html_options.delete(jsatt) if html_options.has_key?(jsatt)
+          js_attributes[jsatt] = js_attributes[jsatt].press('.') if js_attributes[jsatt].is_a?(Hash)
+        else
+          # attributes that are inlined into helper attributes
+          rubyatts = jsatt if rubyatts === true
+          rubyatts = [rubyatts] unless rubyatts.is_a?(Array)
+          rubyatts = rubyatts.select { |att| html_options.include?(att) }
+          jsatt = jsatt.to_s.camel_case
+          js_attributes[jsatt] = {} unless rubyatts.empty?
+          rubyatts.each { |att| js_attributes[jsatt][att.to_s.camel_case] = html_options.delete(att) }
+        end
       end
+
+      options[:event_detail] ||= 'value'
+      # default event property to be sent as value
+      event_detail = 'detail'
+      event_detail += ".#{options[:event_detail]}" if options[:event_detail] && !options[:event_detail].empty?
 
       # put as attributes
       attributes = html_options.collect { |att, val| "#{att.to_s.gsub('_', '-')}=\"#{val}\"" }.join(' ')
@@ -116,10 +128,10 @@ module Vaadin
       js = []
       yield(js, data) if block_given?
       js << "cb.value = #{data.to_json};" if data && !inline_value && !options[:value_as_selection]
-      events.each { |event, route| js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.detail.value}, #{default_callback});});} }
+      events.each { |event, route| js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.#{event_detail}}, #{default_callback});});} }
       js_attributes.each do |att, value|
         if value.is_a?(Hash)
-          value.each { |meth, param| js << "cb.#{att}.#{meth} = #{param.to_json};" }
+          value.each { |meth, param| js << "cb.set(\"#{att}.#{meth.to_s.camel_case}\", #{param.to_json});" }
         elsif value
           js << "cb.#{att} = #{value.to_json}"
         end
@@ -178,6 +190,11 @@ module Vaadin
 
     def vaadin_icon *keys
       keys.collect { |key| icon :vaadin_icons, key }.join
+    end
+
+    def vaadin_upload(target = nil, **html_options, &block)
+      html_options[:target] = target unless html_options.include?(:target) || target.nil?
+      vaadin_element('upload', nil, nil, html_options, block, immediate_event: 'upload-success', event_detail: '', js_attributes: {i18n: true})
     end
 
   end
