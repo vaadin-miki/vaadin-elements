@@ -10,27 +10,6 @@ module Vaadin
     require 'vaadin/jsonise'
 
     ##
-    # Sets up Vaadin Elements, i.e. binds events and sets their initial values.
-    # Accepts an array of ids of elements to be bound. If that array is not present or empty, all elements in +@elements+ are used.
-    #
-    # @param elements [Array<String>] with ids of elements to be bound.
-    # @return [String] with JS code.
-    def setup_vaadin_elements(*elements)
-      elements = (@elements || {}).keys if elements.empty?
-          "document.addEventListener(\"WebComponentsReady\", function (e) {\n" +
-          elements.collect do |element|
-            "var #{element} = document.querySelector(\"##{element}\");\n" +
-                @elements[element].collect { |key, value| "if('#{key}' in #{element}) {\n#{element}.#{key} = #{value.to_json}\n};" }.join("\n") + "\n" +
-                @elements[element].vaadin_events.collect do |event, post|
-                  "#{element}.addEventListener(\"#{event}\", function(e) {ajax.post(\"" +
-                      (post || '~/:id').gsub(':id', element).gsub(':event', event) +
-                      "\", {id: '#{element}', value: e.detail.value}, serverCallbackResponse)});\n"
-                end.join("\n")
-          end.join("\n") +
-          '});'
-    end
-
-    ##
     # Generates imports for specified element types. If the specified types are not provided, all supported types will be imported (as defined in Vaadin::Elements::AVAILABLE.)
     #
     # @oaram elements [Array<String>] with element types to import.
