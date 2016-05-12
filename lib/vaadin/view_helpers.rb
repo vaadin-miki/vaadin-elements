@@ -131,7 +131,7 @@ module Vaadin
       events.each { |event, route| js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.#{event_detail}}, #{default_callback});});} }
       js_attributes.each do |att, value|
         if value.is_a?(Hash)
-          value.each { |meth, param| js << "cb.#{att}.#{meth.to_s.camel_case} = #{param.to_json};" }
+          value.each { |meth, param| js << "cb.set(\"#{att}.#{meth.to_s.camel_case}\", #{param.to_json});" }
         elsif value
           js << "cb.#{att} = #{value.to_json}"
         end
