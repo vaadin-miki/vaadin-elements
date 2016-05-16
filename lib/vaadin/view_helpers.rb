@@ -25,6 +25,23 @@ module Vaadin
       ]+elements.collect { |element| "<link href=\"#{path_base}master/#{element}/#{element}.html\" rel=\"import\">" }).join("\n")
     end
 
+    ##
+    # Generates imports for specified elements through polygit. This will enable using other Polymer elements. If no elements are specified, all of them are imported.
+    # NOTE: To import Polymer as well, all Vaadin Elements must be explicitly imported here, in addition to the Polymer components.
+    #
+    # @param elements [Array<String>] with elements and polymer components to import.
+    # @return [String] with HTML imports.
+    def import_through_polygit(*elements)
+      elements = Vaadin::Elements::AVAILABLE if elements.empty?
+      path_elements = elements + ['components']
+      path_base = 'http://polygit2.appspot.com/polymer+:master/' + path_elements.join('+vaadin+*/')+'/'
+
+      # TODO moment should be imported only if vaadin-date-picker is selected!
+      (["<script src=\"#{path_base}webcomponentsjs/webcomponents-lite.min.js\"></script>",
+        "<script src=\"http://momentjs.com/downloads/moment.min.js\"></script>"
+      ]+elements.collect { |element| "<link href=\"#{path_base}#{element}/#{element}.html\" rel=\"import\">" }).join("\n")
+    end
+
     def vaadin_element(name, object, method, html_options, block, **options)
       html_options = (object.nil? ? {} : (method.nil? ? {id: object, name: object} : {id: [object, method].join('_'), name: "#{object}[#{method}]", })).merge(html_options)
 
