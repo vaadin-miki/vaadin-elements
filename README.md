@@ -32,7 +32,6 @@ Include helpers (Sinatra):
 
 Import the elements (view):
 
-
     <head>
       ...
       <%= import_vaadin_elements %>
@@ -51,6 +50,8 @@ Helpers are expected to be used mainly in views. Each of the helpers produces a 
 
  * corresponding HTML tag with all options that can possibly be set through HTML attributes;
  * if needed - a deferred `script` tag with JS that will be executed once the page is loaded and the element is ready.
+
+Importing the elements can be also done through [Polygit](http://polygit.org/). In that case use `import_through_polygit` instead of `import_vaadin_elements`. Note that this is experimental and may not really work. Any feedback would be more than welcome! 
 
 ### Combo box
 
