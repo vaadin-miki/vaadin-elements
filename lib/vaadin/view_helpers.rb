@@ -9,37 +9,35 @@ module Vaadin
   module ViewHelpers
     require 'vaadin/jsonise'
 
+    def import_elements(path_infix, webcomponents_infix, elements, &path_block)
+      elements = Vaadin::Elements::AVAILABLE if elements.empty?
+      path_base = path_block.call(elements)
+
+      # there was lastest/ between path_base and webcomponentsjs for cdn (direct) import
+      static_imports = ["<script src=\"#{path_base}#{webcomponents_infix}webcomponentsjs/webcomponents-lite.min.js\"></script>",
+                        "<script src=\"https://raw.githubusercontent.com/vaadin-miki/vaadin-elements-jsrubyconnector/master/connector.js\"></script>"
+      ]
+      static_imports << "<script src=\"http://momentjs.com/downloads/moment.min.js\"></script>" if elements.include?('vaadin-date-picker')
+
+      (static_imports+elements.collect { |element| "<link href=\"#{path_base}#{path_infix}#{element}/#{element}.html\" rel=\"import\">" }).join("\n")
+    end
+
     ##
     # Generates imports for specified element types. If the specified types are not provided, all supported types will be imported (as defined in Vaadin::Elements::AVAILABLE.)
     #
     # @oaram elements [Array<String>] with element types to import.
     # @return [String] with HTML code.
     def import_vaadin_elements(*elements)
-      elements = Vaadin::Elements::AVAILABLE if elements.empty?
-      path_base = 'https://cdn.vaadin.com/vaadin-core-elements/'
-
-      # TODO moment should be imported only if vaadin-date-picker is selected!
-      (["<script src=\"#{path_base}latest/webcomponentsjs/webcomponents-lite.min.js\"></script>",
-        "<script src=\"http://momentjs.com/downloads/moment.min.js\"></script>",
-        "<script src=\"https://raw.githubusercontent.com/vaadin-miki/vaadin-elements-jsrubyconnector/master/connector.js\"></script>"
-      ]+elements.collect { |element| "<link href=\"#{path_base}master/#{element}/#{element}.html\" rel=\"import\">" }).join("\n")
+      import_elements("master/", "latest/", elements) { |_| 'https://cdn.vaadin.com/vaadin-core-elements/' }
     end
 
     ##
     # Generates imports for specified elements through polygit. This will enable using other Polymer elements. If no elements are specified, all of them are imported.
-    # NOTE: To import Polymer as well, all Vaadin Elements must be explicitly imported here, in addition to the Polymer components.
     #
     # @param elements [Array<String>] with elements and polymer components to import.
     # @return [String] with HTML imports.
     def import_through_polygit(*elements)
-      elements = Vaadin::Elements::AVAILABLE if elements.empty?
-      path_elements = elements + ['components']
-      path_base = 'http://polygit2.appspot.com/polymer+:master/' + path_elements.join('+vaadin+*/')+'/'
-
-      # TODO moment should be imported only if vaadin-date-picker is selected!
-      (["<script src=\"#{path_base}webcomponentsjs/webcomponents-lite.min.js\"></script>",
-        "<script src=\"http://momentjs.com/downloads/moment.min.js\"></script>"
-      ]+elements.collect { |element| "<link href=\"#{path_base}#{element}/#{element}.html\" rel=\"import\">" }).join("\n")
+      import_elements("", "", elements) { |els| 'http://polygit2.appspot.com/polymer+:master/' + ((els+['components']).join('+vaadin+*/'))+'/' }
     end
 
     def vaadin_element(name, object, method, html_options, block, **options)
