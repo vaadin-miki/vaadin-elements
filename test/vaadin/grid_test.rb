@@ -32,22 +32,22 @@ class Vaadin::GridTest < Minitest::Test
 
   def setup
     @countries = Country.find_all
-    @country = @countries.find { |c| c.code == "PL" }
-    @person = Person.new("FI")
+    @country = @countries.find { |c| c.code == 'PL' }
+    @person = Person.new('FI')
   end
 
   def test_empty
     html = vaadin_grid
-    assert_equal "<vaadin-grid></vaadin-grid>", html
+    assert_equal '<vaadin-grid></vaadin-grid>', html
   end
 
   def test_id_column_names
-    html = vaadin_grid id: "grid", column_names: %w{foo bar}
+    html = vaadin_grid id: 'grid', column_names: %w{foo bar}
     assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.columns = [{\"name\":\"foo\"},{\"name\":\"bar\"}];});</script>", html
   end
 
   def test_choices
-    html = vaadin_grid @countries, id: "grid"
+    html = vaadin_grid @countries, id: 'grid'
     assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];});</script>", html
   end
 
@@ -67,13 +67,18 @@ class Vaadin::GridTest < Minitest::Test
   end
 
   def test_choices_immediate
-    html = vaadin_grid @countries, id: "grid", immediate: true
-    assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];cb.addEventListener('selected-items-changed', function(e) {ajax.post('/grid', {id: 'grid', value: e.detail.value}, null);});});</script>", html
+    html = vaadin_grid @countries, id: 'grid', immediate: true
+    assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];cb.addEventListener('selected-items-changed', function(e) {var grid = document.querySelector(\"grid\");selection = grid.selection.selected(function(index){grid.getItem(index, function(err, item){return index;});});ajax.post('/grid', {id: 'grid', value: selected}, null);});});</script>", html
+  end
+
+  def test_choices_immediate_value_path
+    html = vaadin_grid @countries, id: 'grid', immediate: true, item_value_path: 'code'
+    assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];cb.addEventListener('selected-items-changed', function(e) {var grid = document.querySelector(\"grid\");selection = grid.selection.selected(function(index){grid.getItem(index, function(err, item){return item.code;});});ajax.post('/grid', {id: 'grid', value: selected}, null);});});</script>", html
   end
 
   def test_choices_immediate_callback
-    html = vaadin_grid @countries, id: "grid", immediate: true, use_callback: 'gridCallback'
-    assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];cb.addEventListener('selected-items-changed', function(e) {ajax.post('/grid', {id: 'grid', value: e.detail.value}, gridCallback);});});</script>", html
+    html = vaadin_grid @countries, id: 'grid', immediate: true, use_callback: 'gridCallback'
+    assert_equal "<vaadin-grid id=\"grid\"></vaadin-grid><script async=\"false\" defer=\"true\">document.addEventListener(\"WebComponentsReady\", function(e) {var cb = document.querySelector(\"#grid\");cb.items = [{\"code\":\"PL\",\"english\":\"Poland\",\"name\":\"Polska\"},{\"code\":\"FI\",\"english\":\"Finland\",\"name\":\"Suomi\"},{\"code\":\"DE\",\"english\":\"Germany\",\"name\":\"Deutschland\"},{\"code\":\"SE\",\"english\":\"Sweden\",\"name\":\"Sverige\"}];cb.addEventListener('selected-items-changed', function(e) {var grid = document.querySelector(\"grid\");selection = grid.selection.selected(function(index){grid.getItem(index, function(err, item){return index;});});ajax.post('/grid', {id: 'grid', value: selected}, gridCallback);});});</script>", html
   end
 
   def test_lazy_loading
