@@ -186,7 +186,7 @@ module Vaadin
       item_value_path = item_value_path ? "item.#{item_value_path}" : 'index'
 
       vaadin_collection_element('grid', object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed', overwritten_default_events: 'selected-items-changed') do |js, data, events, html_opts, default_callback|
-        js << %{cb.addEventListener('selected-items-changed', function(e) {selection = document.querySelector("##{html_opts[:id]}").selection.selected(function(index){document.querySelector("##{html_opts[:id]}").getItem(index, function(err, item){return #{item_value_path};});});ajax.post('#{events['selected-items-changed']}', {id: '#{html_options[:id]}', value: selected}, #{default_callback});});} if events['selected-items-changed']
+        js << %{cb.addEventListener('selected-items-changed', function(e) {selection = document.querySelector("##{html_opts[:id]}").selection.selected(function(index){document.querySelector("##{html_opts[:id]}").getItem(index, function(err, item){return #{item_value_path};});});ajax.post('#{events['selected-items-changed']}', {id: '#{html_options[:id]}', value: selection}, #{default_callback});});} if events['selected-items-changed']
       end
     end
 
