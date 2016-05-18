@@ -100,10 +100,13 @@ Supported options:
 
 Supported options:
 
+* `immediate` - either `true` or path to post data to immediately when selection changes in the grid; note that the parameter `value` contains *a string with a JSON array* of either *selected indices* or *properties specified by `item_value_path`* 
+* `item_value_path` - specifies which property of the selected items to pass to immediate events
 * `column_names` - array of strings with names of columns to show (they will be humanised before outputting: "first_name" -> "First Name")
 * `id` - to overwrite the default id or provide a custom one
+* `selection_mode` - when not specified, it is `:single`, other possible values are `:multi`, `:all` and `:disabled`, as stated in [the documentation for Grid](https://vaadin.com/docs/-/part/elements/vaadin-grid/selection.html)
 
-Currently no events are supported from the grid.
+Currently no events other than `selection-changed` are supported from the grid.
 
 ## Limitations
 
@@ -113,6 +116,7 @@ Major limitations:
 
 * An object passed to the grid or combo box must have a valid `to_json` implementation.
 * Date picker's `value-changed` event sends a `String` when using a helper.
+* Grid cannot be replaced with combo-box, as it requires changes to the code that receives the data from the event.
 
 ## Development
 

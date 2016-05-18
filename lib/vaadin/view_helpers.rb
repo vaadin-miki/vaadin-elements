@@ -120,9 +120,17 @@ module Vaadin
 
       # build js
       js = []
-      yield(js, data) if block_given?
+
+      # call the extra block
+      yield(js, data, events, html_options, default_callback) if block_given?
+
       js << "cb.value = #{data.to_json};" if data && !inline_value && !options[:value_as_selection]
-      events.each { |event, route| js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.#{event_detail}}, #{default_callback});});} }
+      # the unless clause in the next line is here because of a missing feature in Grid Element
+      # more details available under https://github.com/vaadin/vaadin-grid/issues/201
+      # once that issue is fixed, the workaround should no longer be needed
+      events.each { |event, route| js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.#{event_detail}}, #{default_callback});});} unless options[:overwritten_default_events] && options[:overwritten_default_events].include?(event) }
+
+      # set up all js attributes from the helper
       js_attributes.each do |att, value|
         if value.is_a?(Hash)
           value.each { |meth, param| js << "cb.set(\"#{att}.#{meth.to_s.camel_case}\", #{param.to_json});" }
@@ -150,15 +158,15 @@ module Vaadin
       options[:lazy_load], choices = choices, nil if choices.is_a?(String)
       options.delete(:lazy_load) unless options[:lazy_load].is_a?(String)
 
-      vaadin_element(name, object, method, html_options, block, options.merge(condition: ->() { choices.nil? || choices.empty? })) do |js, data|
+      vaadin_element(name, object, method, html_options, block, options.merge(condition: ->() { choices.nil? || choices.empty? })) do |js, data, events, html_opts, default_callback|
         if choices && !choices.empty? then
           js << "cb.items = #{choices.to_json};"
-          js << "cb.selection.select(#{choices.find_index { |e| e == data }});" if data && options[:value_as_selection]
+          js << "cb.selection.select(#{choices.find_index(data)});" if data && options[:value_as_selection]
         end
         js << "cb.columns = #{options[:column_names].collect { |n| {name: n} }.to_json};" if options[:column_names]
         js << "cb.items = function(params, callback) {ajax.post(\"#{options[:lazy_load]}\", params, function(e) {var json = JSON.parse(e);callback(json.result, json.size);});};" if options[:lazy_load]
 
-        extra_js.call(js, data) if extra_js
+        extra_js.call(js, data, events, html_opts, default_callback) if extra_js
       end
     end
 
@@ -174,7 +182,12 @@ module Vaadin
     end
 
     def vaadin_grid(object = nil, method = nil, choices = nil, **html_options, &block)
-      vaadin_collection_element('grid', object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed')
+      item_value_path = html_options.delete(:item_value_path)
+      item_value_path = item_value_path ? "item.#{item_value_path}" : 'index'
+
+      vaadin_collection_element('grid', object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed', overwritten_default_events: 'selected-items-changed') do |js, data, events, html_opts, default_callback|
+        js << %{cb.addEventListener('selected-items-changed', function(e) {selection = document.querySelector("##{html_opts[:id]}").selection.selected(function(index){var grItem;document.querySelector("##{html_opts[:id]}").getItem(index, function(err, item){grItem=#{item_value_path};});return grItem;});ajax.post('#{events['selected-items-changed']}', {id: '#{html_options[:id]}', value: JSON.stringify(selection)}, #{default_callback});});} if events['selected-items-changed']
+      end
     end
 
     def icon icon_set, key = nil
