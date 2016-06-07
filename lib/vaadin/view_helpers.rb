@@ -15,7 +15,7 @@ module Vaadin
 
       # there was lastest/ between path_base and webcomponentsjs for cdn (direct) import
       static_imports = ["<script src=\"#{path_base}#{webcomponents_infix}webcomponentsjs/webcomponents-lite.min.js\"></script>",
-                        "<script src=\"https://raw.githubusercontent.com/vaadin-miki/vaadin-elements-jsrubyconnector/master/connector.js\"></script>"
+                        "<script src=\"https://cdn.rawgit.com/vaadin-miki/vaadin-elements-jsrubyconnector/master/connector.js\"></script>"
       ]
       static_imports << "<script src=\"http://momentjs.com/downloads/moment.min.js\"></script>" if elements.include?('vaadin-date-picker')
 
