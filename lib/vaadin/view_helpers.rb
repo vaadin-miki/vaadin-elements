@@ -201,7 +201,7 @@ module Vaadin
       vaadin_collection_element('grid', object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed', overwritten_default_events: 'selected-items-changed') do |js, data, events, html_opts, default_callback|
         # the parameter may go with extra nesting if foo[bar] is used as a name
         extra = [
-            (($3 ? "#{$1}: {#{$3}: JSON.stringify(selection)}" : "#{$1}: JSON.stringify(selection)") if html_opts[:name] =~ /(\w+)(\[(\w+)\])?/),
+            (($3 ? "#{$1}: JSON.stringify({#{$3}: JSON.stringify(selection)})" : "#{$1}: JSON.stringify(selection)") if html_opts[:name] =~ /(\w+)(\[(\w+)\])?/),
             ("name: '#{html_opts[:name]}'" if html_opts[:name])
         ].compact.join(", ")
         extra = ", "+extra unless extra.empty?
