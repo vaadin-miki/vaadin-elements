@@ -125,7 +125,7 @@ module Vaadin
       js = []
 
       # call the extra block
-      yield(js, data, events, html_options, default_callback) if block_given?
+      yield(js, data, events, html_options, default_callback, verbose_event) if block_given?
 
       js << "cb.value = #{data.to_json};" if data && !inline_value && !options[:value_as_selection]
 
@@ -135,7 +135,6 @@ module Vaadin
       events.each do |event, route|
         # note this code repeats in the vaadin_grid block
         # verbose events include all parameters, whereas nonverbose only the name/value pair
-
         ajax_post = []
         ajax_post << "id: '#{html_options[:id]}'" << "value: e.#{event_detail}" if html_options[:name].nil? || verbose_event
         ajax_post << "name: '#{html_options[:name]}'" if html_options[:name] && verbose_event
@@ -172,7 +171,7 @@ module Vaadin
       options[:lazy_load], choices = choices, nil if choices.is_a?(String)
       options.delete(:lazy_load) unless options[:lazy_load].is_a?(String)
 
-      vaadin_element(name, object, method, html_options, block, options.merge(condition: ->() { choices.nil? || choices.empty? })) do |js, data, events, html_opts, default_callback|
+      vaadin_element(name, object, method, html_options, block, options.merge(condition: ->() { choices.nil? || choices.empty? })) do |js, data, events, html_opts, default_callback, verbose_event|
         if choices && !choices.empty? then
           js << "cb.items = #{choices.to_json};"
           js << "cb.selection.select(#{choices.find_index(data)});" if data && options[:value_as_selection]
@@ -180,7 +179,7 @@ module Vaadin
         js << "cb.columns = #{options[:column_names].collect { |n| {name: n} }.to_json};" if options[:column_names]
         js << "cb.items = function(params, callback) {ajax.post(\"#{options[:lazy_load]}\", params, function(e) {var json = JSON.parse(e);callback(json.result, json.size);});};" if options[:lazy_load]
 
-        extra_js.call(js, data, events, html_opts, default_callback) if extra_js
+        extra_js.call(js, data, events, html_opts, default_callback, verbose_event) if extra_js
       end
     end
 
@@ -199,10 +198,14 @@ module Vaadin
       item_value_path = html_options.delete(:item_value_path)
       item_value_path = item_value_path ? "item.#{item_value_path}" : 'index'
 
-      vaadin_collection_element('grid', object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed', overwritten_default_events: 'selected-items-changed') do |js, data, events, html_opts, default_callback|
+      vaadin_collection_element('grid', object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed', overwritten_default_events: 'selected-items-changed') do |js, data, events, html_opts, default_callback, verbose_event|
         # if only vaadin-grid supported value change events...
-        extra = html_opts[:name] ? ", name: '#{html_opts[:name]}', '#{html_opts[:name]}': JSON.stringify(selection)" : ''
-        js << %{cb.addEventListener('selected-items-changed', function(e) {selection = document.querySelector("##{html_opts[:id]}").selection.selected(function(index){var grItem;document.querySelector("##{html_opts[:id]}").getItem(index, function(err, item){grItem=#{item_value_path};});return grItem;});ajax.post('#{events['selected-items-changed']}', {id: '#{html_options[:id]}', value: JSON.stringify(selection)#{extra}}, #{default_callback});});} if events['selected-items-changed']
+        # verbose events include all parameters, whereas nonverbose only the name/value pair
+        ajax_post = []
+        ajax_post << "id: '#{html_opts[:id]}'" << "value: JSON.stringify(selection)" if html_opts[:name].nil? || verbose_event
+        ajax_post << "name: '#{html_opts[:name]}'" if html_opts[:name] && verbose_event
+        ajax_post << "'#{html_opts[:name]}': JSON.stringify(selection)" if html_opts[:name]
+        js << %{cb.addEventListener('selected-items-changed', function(e) {selection = document.querySelector("##{html_opts[:id]}").selection.selected(function(index){var grItem;document.querySelector("##{html_opts[:id]}").getItem(index, function(err, item){grItem=#{item_value_path};});return grItem;});ajax.post('#{events['selected-items-changed']}', {#{ajax_post.join(", ")}}, #{default_callback});});} if events['selected-items-changed']
       end
     end
 
