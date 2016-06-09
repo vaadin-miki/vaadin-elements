@@ -53,6 +53,9 @@ module Vaadin
       # by default causes a rest-like post to /object/id/method if there is id, or /object/method if there is no id, or can be specified
       immediate = html_options.delete :immediate
 
+      # verbose events include additionally id of a component that triggered the event, event value in the 'value' field and a component name
+      verbose_event = html_options.delete :verbose_event
+
       data = instance_variable_get("@#{object}") rescue nil
 
       # other events - immediate is a syntax sugar for value-changed
@@ -131,11 +134,14 @@ module Vaadin
       # once that issue is fixed, the workaround should no longer be needed
       events.each do |event, route|
         # note this code repeats in the vaadin_grid block
-        extra = html_options[:name] ? ", name: '#{html_options[:name]}', '#{html_options[:name]}': e.#{event_detail}" : ''
-        # as per #25 the 'name' and the above are extra parameters to help handling automatic updating of the objects
-        ajax_post = "ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.#{event_detail}#{extra}}, #{default_callback})"
+        # verbose events include all parameters, whereas nonverbose only the name/value pair
 
-        js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {#{ajax_post};});} unless options[:overwritten_default_events] && options[:overwritten_default_events].include?(event)
+        ajax_post = []
+        ajax_post << "id: '#{html_options[:id]}'" << "value: e.#{event_detail}" if html_options[:name].nil? || verbose_event
+        ajax_post << "name: '#{html_options[:name]}'" if html_options[:name] && verbose_event
+        ajax_post << "'#{html_options[:name]}': e.#{event_detail}" if html_options[:name]
+
+        js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {ajax.post('#{route}', {#{ajax_post.join(", ")}}, #{default_callback});});} unless options[:overwritten_default_events] && options[:overwritten_default_events].include?(event)
       end
 
       # set up all js attributes from the helper

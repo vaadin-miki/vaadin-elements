@@ -93,11 +93,22 @@ class Vaadin::ComboBoxTest < Minitest::Test
 
   def test_immediate_object_options
     html = vaadin_combo_box(:country, @countries, {label: "Pick a country:", immediate: true})
+    assert_equal %{<vaadin-combo-box id="country" name="country" label="Pick a country:"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#country");cb.items = ["Poland","Finland","Germany"];cb.addEventListener('value-changed', function(e) {ajax.post('/country', {'country': e.detail.value}, null);});});</script>}, html
+  end
+
+  def test_immediate_object_options_verbose
+    html = vaadin_combo_box(:country, @countries, {label: "Pick a country:", immediate: true, verbose_event: true})
     assert_equal %{<vaadin-combo-box id="country" name="country" label="Pick a country:"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#country");cb.items = ["Poland","Finland","Germany"];cb.addEventListener('value-changed', function(e) {ajax.post('/country', {id: 'country', value: e.detail.value, name: 'country', 'country': e.detail.value}, null);});});</script>}, html
   end
 
+
   def test_immediate_object_value
     html = vaadin_combo_box(:big_place, :country, @countries, immediate: true)
+    assert_equal %{<vaadin-combo-box id="big_place_country" name="big_place[country]"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#big_place_country");cb.items = ["Poland","Finland","Germany"];cb.value = "Poland";cb.addEventListener('value-changed', function(e) {ajax.post('/big_place/666/country', {'big_place[country]': e.detail.value}, null);});});</script>}, html
+  end
+
+  def test_immediate_object_value_verbose
+    html = vaadin_combo_box(:big_place, :country, @countries, immediate: true, verbose_event: true)
     assert_equal %{<vaadin-combo-box id="big_place_country" name="big_place[country]"></vaadin-combo-box><script async="false" defer="true">document.addEventListener("WebComponentsReady", function(e) {var cb = document.querySelector("#big_place_country");cb.items = ["Poland","Finland","Germany"];cb.value = "Poland";cb.addEventListener('value-changed', function(e) {ajax.post('/big_place/666/country', {id: 'big_place_country', value: e.detail.value, name: 'big_place[country]', 'big_place[country]': e.detail.value}, null);});});</script>}, html
   end
 
