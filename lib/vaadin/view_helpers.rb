@@ -125,10 +125,23 @@ module Vaadin
       yield(js, data, events, html_options, default_callback) if block_given?
 
       js << "cb.value = #{data.to_json};" if data && !inline_value && !options[:value_as_selection]
+
       # the unless clause in the next line is here because of a missing feature in Grid Element
       # more details available under https://github.com/vaadin/vaadin-grid/issues/201
       # once that issue is fixed, the workaround should no longer be needed
-      events.each { |event, route| js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.#{event_detail}}, #{default_callback});});} unless options[:overwritten_default_events] && options[:overwritten_default_events].include?(event) }
+      events.each do |event, route|
+        # the parameter may go with extra nesting if foo[bar] is used as a name
+        # note this code repeats in the vaadin_grid block
+        extra = [
+            (($3 ? "#{$1}: {#{$3}: e.#{event_detail}}" : "#{$1}: e.#{event_detail}") if html_options[:name] =~ /(\w+)(\[(\w+)\])?/),
+            ("name: '#{html_options[:name]}'" if html_options[:name])
+        ].compact.join(", ")
+        extra = ", "+extra unless extra.empty?
+        # as per #25 the 'name' and the above are extra parameters to help handling automatic updating of the objects
+        ajax_post = "ajax.post('#{route}', {id: '#{html_options[:id]}', value: e.#{event_detail}#{extra}}, #{default_callback})"
+
+        js << %{cb.addEventListener('#{event.to_s.gsub('_', '-')}', function(e) {#{ajax_post};});} unless options[:overwritten_default_events] && options[:overwritten_default_events].include?(event)
+      end
 
       # set up all js attributes from the helper
       js_attributes.each do |att, value|
@@ -186,7 +199,14 @@ module Vaadin
       item_value_path = item_value_path ? "item.#{item_value_path}" : 'index'
 
       vaadin_collection_element('grid', object, method, choices, html_options, block, value_as_selection: true, immediate_event: 'selected-items-changed', overwritten_default_events: 'selected-items-changed') do |js, data, events, html_opts, default_callback|
-        js << %{cb.addEventListener('selected-items-changed', function(e) {selection = document.querySelector("##{html_opts[:id]}").selection.selected(function(index){var grItem;document.querySelector("##{html_opts[:id]}").getItem(index, function(err, item){grItem=#{item_value_path};});return grItem;});ajax.post('#{events['selected-items-changed']}', {id: '#{html_options[:id]}', value: JSON.stringify(selection)}, #{default_callback});});} if events['selected-items-changed']
+        # the parameter may go with extra nesting if foo[bar] is used as a name
+        extra = [
+            (($3 ? "#{$1}: {#{$3}: JSON.stringify(selection)}" : "#{$1}: JSON.stringify(selection)") if html_opts[:name] =~ /(\w+)(\[(\w+)\])?/),
+            ("name: '#{html_opts[:name]}'" if html_opts[:name])
+        ].compact.join(", ")
+        extra = ", "+extra unless extra.empty?
+
+        js << %{cb.addEventListener('selected-items-changed', function(e) {selection = document.querySelector("##{html_opts[:id]}").selection.selected(function(index){var grItem;document.querySelector("##{html_opts[:id]}").getItem(index, function(err, item){grItem=#{item_value_path};});return grItem;});ajax.post('#{events['selected-items-changed']}', {id: '#{html_options[:id]}', value: JSON.stringify(selection)#{extra}}, #{default_callback});});} if events['selected-items-changed']
       end
     end
 
