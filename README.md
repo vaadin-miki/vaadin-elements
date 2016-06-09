@@ -64,6 +64,7 @@ Supported options:
 * `id` - to overwrite the default id or provide a custom one (required when `immediate`)
 * `use_callback` - either `true` or a name of a JavaScript available function to call with the response; when `true`, default `serverCallbackResponse` is used and it expects `application/json` as response type
 * `events` - map of `event_name: true_or_path` with handled events; `value-changed` events can be declared this way, too (though `immediate` has a higher precedence and is recommended)
+* `verbose_event` - either `true` or `false`; when `true`, event data sent to the server will include more details than just the name-value pair 
 
 All events are supported.
 
@@ -79,6 +80,7 @@ Supported options:
 * `use_callback` - either `true` or a name of a JavaScript available function to call with the response; when `true`, default `serverCallbackResponse` is used and it expects `application/json` as response type
 * `events` - map of `event_name: true_or_path` with handled events; `value-changed` events can be declared this way, too (though `immediate` has a higher precedence and is recommended)
 * `month_names`, `weekdays_short`, `first_day_of_week`, `today`, `cancel` - options to pass to `i18n` of the date picker that contain month names, short weekday names, number of the first day of the week (0 is Sunday), and captions for _Today_ and _Cancel_ buttons, respectively; note that these are set up once the component is ready
+* `verbose_event` - either `true` or `false`; when `true`, event data sent to the server will include more details than just the name-value pair 
 
 All events are supported.
 
@@ -93,6 +95,7 @@ Supported options:
 * `target` - path to post the file to; while not required, it is recommended; can be provided either as an option or as a simple string outside of options map
 * `i18n` - map with localised messages, as defined in the [official documentation for i18n](https://vaadin.com/docs/-/part/elements/vaadin-upload/vaadin-upload-i18n.html)
 * `events` - map with event names and paths to post data to, as defined in the [official documentation for events](https://vaadin.com/docs/-/part/elements/vaadin-upload/vaadin-upload-basic.html)
+* `verbose_event` - either `true` or `false`; when `true`, event data sent to the server will include more details than just the name-value pair 
 
 ### Grid
 
@@ -105,6 +108,7 @@ Supported options:
 * `column_names` - array of strings with names of columns to show (they will be humanised before outputting: "first_name" -> "First Name")
 * `id` - to overwrite the default id or provide a custom one
 * `selection_mode` - when not specified, it is `:single`, other possible values are `:multi`, `:all` and `:disabled`, as stated in [the documentation for Grid](https://vaadin.com/docs/-/part/elements/vaadin-grid/selection.html)
+* `verbose_event` - either `true` or `false`; when `true`, event data sent to the server will include more details than just the name-value pair 
 
 Currently no events other than `selection-changed` are supported from the grid.
 
